@@ -77,6 +77,7 @@ python run_all.py
 Each step will generate its corresponding output JSON file under the data/ directory.
 
 📊 Input / Output Summary
+```
 Task	Input	Output	Description
 1	example.pnml	net_structure.json	Parse PNML and extract Petri Net structure
 2	net_structure.json	reachable_markings.json	Compute all reachable markings (BFS/DFS)
@@ -95,7 +96,7 @@ bdd_result.json
 deadlocks.json
    ↓ (Task 5)
 optimization_result.json
-
+```
 🔗 References
 
 PNML Standard: https://www.pnml.org/
