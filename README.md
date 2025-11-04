@@ -29,7 +29,7 @@ All intermediate data between tasks are stored in JSON format for clarity and re
 ---
 
 ## 🗂 Folder Structure
-
+```
 Assignment-CO2011-CSE251/
 ├── data/
 │ ├── example.pnml
@@ -57,6 +57,7 @@ Assignment-CO2011-CSE251/
 ├── data_format.md
 ├── .gitignore
 └── README.md
+```
 ---
 
 ## ⚙️ Setup & Run
