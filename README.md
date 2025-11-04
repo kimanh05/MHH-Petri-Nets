@@ -3,7 +3,7 @@
 
 ---
 
-## 👥 Group Information
+## 👥 Group 33
 | Member | Student ID | Class | Task |
 |:---------------------------|:-----------:|:------:|:--------|
 | **Phạm Thảo Ngọc** | 2312318 | TN02 | Task 3 |
