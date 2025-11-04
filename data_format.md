@@ -46,6 +46,7 @@ This document defines the input and output data formats used between tasks in th
     "build_time_seconds": 0.0123
 }
 ```
+
 ## ⚫ Task 4 – Deadlock Detection
 **Input:** data/reachable_markings.json, data/bdd_result.json
 **Output** data/deadlocks.json
@@ -59,7 +60,8 @@ This document defines the input and output data formats used between tasks in th
     "time_seconds": 0.004
 }
 ```
-##🟣 Task 5 – Optimization
+
+## 🟣 Task 5 – Optimization
 **Input:** data/reachable_markings.json
 **Output:** data/optimization_result.json
 
