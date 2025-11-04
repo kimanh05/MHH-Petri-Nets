@@ -78,12 +78,13 @@ Each step will generate its corresponding output JSON file under the data/ direc
 
 📊 Input / Output Summary
 ```
-Task	Input                                       	Output	                     Description
-1   	example.pnml	                              net_structure.json	         Parse PNML and extract Petri Net structure
-2   	net_structure.json	                        reachable_markings.json	      Compute all reachable markings (BFS/DFS)
-3	   reachable_markings.json	                     bdd_result.json	            Build symbolic BDD and count reachable states
-4	   reachable_markings.json, bdd_result.json	   deadlocks.json	               Detect deadlocks via ILP + BDD
-5	   reachable_markings.json	                     optimization_result.json	   Maximize linear objective function over reachable markings
+| Task | Input | Output | Description |
+|------|--------|---------|-------------|
+| 1 | `example.pnml` | `net_structure.json` | Parse PNML and extract Petri Net structure |
+| 2 | `net_structure.json` | `reachable_markings.json` | Compute all reachable markings (BFS/DFS) |
+| 3 | `reachable_markings.json` | `bdd_result.json` | Build symbolic BDD and count reachable states |
+| 4 | `reachable_markings.json`, `bdd_result.json` | `deadlocks.json` | Detect deadlocks via ILP + BDD |
+| 5 | `reachable_markings.json` | `optimization_result.json` | Maximize linear objective function over reachable markings |
 📈 Example Workflow
 example.pnml
    ↓ (Task 1)
