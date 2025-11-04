@@ -58,7 +58,6 @@ Assignment-CO2011-CSE251/
 └── README.md
 
 yaml
-Sao chép mã
 
 ---
 
@@ -69,9 +68,44 @@ Make sure you have **Python ≥ 3.10** installed.
 Then install all required libraries:
 ```bash
 pip install -r requirements.txt
+```
 2️⃣ Run Full Pipeline
 To execute all five tasks sequentially:
 
-bash
-Sao chép mã
+```bash
 python run_all.py
+```
+Each step will generate its corresponding output JSON file under the data/ directory.
+
+📊 Input / Output Summary
+Task	Input	Output	Description
+1	example.pnml	net_structure.json	Parse PNML and extract Petri Net structure
+2	net_structure.json	reachable_markings.json	Compute all reachable markings (BFS/DFS)
+3	reachable_markings.json	bdd_result.json	Build symbolic BDD and count reachable states
+4	reachable_markings.json, bdd_result.json	deadlocks.json	Detect deadlocks via ILP + BDD
+5	reachable_markings.json	optimization_result.json	Maximize linear objective function over reachable markings
+📈 Example Workflow
+example.pnml
+   ↓ (Task 1)
+net_structure.json
+   ↓ (Task 2)
+reachable_markings.json
+   ↓ (Task 3)
+bdd_result.json
+   ↓ (Task 4)
+deadlocks.json
+   ↓ (Task 5)
+optimization_result.json
+
+🔗 References
+
+PNML Standard: https://www.pnml.org/
+
+BDD Library: dd
+
+ILP Solver: PuLP
+
+Mathematical Modeling Course Material – HCMUT, 2025–2026
+
+📍 Semester 1, 2025–2026 — CO2011 Mathematical Modeling
+
