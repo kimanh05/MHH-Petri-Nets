@@ -4,7 +4,7 @@ This document defines the input and output data formats used between tasks in th
 
 ---
 
-## 🟢 Task 1 – PNML Parser
+## 🟢 Task 1 – PNML Parser  
 **Input:** `data/example.pnml`  
 **Output:** `data/net_structure.json`
 
@@ -20,32 +20,35 @@ This document defines the input and output data formats used between tasks in th
     ],
     "initial_marking": {"p1": 1, "p2": 0, "p3": 0}
 }
-## 🟡 Task 2 – Reachable Markings (BFS/DFS)
-**Input:** data/net_structure.json
-**Output:** data/reachable_markings.json
+🟡 Task 2 – Reachable Markings (BFS/DFS)
+Input: data/net_structure.json
+Output: data/reachable_markings.json
 
-```json
+json
+Sao chép mã
 [
     {"p1": 1, "p2": 0, "p3": 0},
     {"p1": 0, "p2": 1, "p3": 0},
     {"p1": 0, "p2": 0, "p3": 1}
 ]
-## 🔵 Task 3 – Symbolic BDD
-**Input:** data/reachable_markings.json
-**Output:** data/bdd_result.json
+🔵 Task 3 – Symbolic BDD
+Input: data/reachable_markings.json
+Output: data/bdd_result.json
 
-```json
+json
+Sao chép mã
 {
     "num_markings": 3,
     "bdd_nodes": 10,
     "places": ["p1", "p2", "p3"],
     "build_time_seconds": 0.0123
 }
-## ⚫ Task 4 – Deadlock Detection
-**Input:** data/reachable_markings.json, data/bdd_result.json
-**Output** data/deadlocks.json
+⚫ Task 4 – Deadlock Detection
+Input: data/reachable_markings.json, data/bdd_result.json
+Output: data/deadlocks.json
 
-```json
+json
+Sao chép mã
 {
     "deadlocks_found": true,
     "deadlock_states": [
@@ -53,11 +56,12 @@ This document defines the input and output data formats used between tasks in th
     ],
     "time_seconds": 0.004
 }
-##🟣 Task 5 – Optimization
-**Input:** data/reachable_markings.json
-**Output:** data/optimization_result.json
+🟣 Task 5 – Optimization
+Input: data/reachable_markings.json
+Output: data/optimization_result.json
 
-```json
+json
+Sao chép mã
 {
     "best_marking": {"p1": 1, "p2": 0, "p3": 0},
     "max_value": 3,
