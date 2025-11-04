@@ -1,0 +1,38 @@
+# ============================
+# Python build / cache files
+# ============================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ============================
+# Virtual environment folders
+# ============================
+venv/
+.env/
+
+# ============================
+# Data output files
+# (Ignore all generated JSONs except the input PNML)
+# ============================
+data/*.json
+!data/example.pnml
+
+# ============================
+# IDE / Editor configuration
+# ============================
+.vscode/
+.idea/
+
+# ============================
+# OS-specific files
+# ============================
+.DS_Store
+Thumbs.db
+
+# ============================
+# Logs / temporary files
+# ============================
+*.log
+*.tmp
