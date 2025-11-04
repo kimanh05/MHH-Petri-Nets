@@ -1,0 +1,9 @@
+dd
+pyeda
+pulp
+networkx
+numpy
+
+"""
+chạy: pip install -r requirements.txt
+"""
