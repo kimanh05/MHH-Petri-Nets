@@ -88,17 +88,25 @@ Each step will generate its corresponding output JSON file under the data/ direc
 
 ```
 📈 Example Workflow
-example.pnml
-   ↓ (Task 1)
-net_structure.json
-   ↓ (Task 2)
-reachable_markings.json
-   ↓ (Task 3)
-bdd_result.json
-   ↓ (Task 4)
-deadlocks.json
-   ↓ (Task 5)
-optimization_result.json
+Task 1 (Parser)
+   Input: example.pnml
+   Output: net_structure.json
+        ↓
+Task 2 (BFS Reachability)
+   Input: net_structure.json
+   Output: reachable_markings.json
+        ↓
+Task 3 (Symbolic BDD)
+   Input: reachable_markings.json
+   Output: bdd_result.json
+        ↓
+Task 4 (Deadlock Detection)
+   Input: reachable_markings.json + bdd_result.json
+   Output: deadlocks.json
+        ↓
+Task 5 (Optimization)
+   Input: reachable_markings.json
+   Output: optimization_result.json
 ```
 🔗 References
 
