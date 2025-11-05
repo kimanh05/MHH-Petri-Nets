@@ -23,7 +23,7 @@ This document defines the input and output data formats used between tasks in th
 ```
 
 ## 🟡 Task 2 – Reachable Markings (BFS/DFS)
-**Input:** `data/net_structure.json`
+**Input:** `data/net_structure.json`    
 **Output:** `data/reachable_markings.json`
 
 ```json
@@ -35,7 +35,7 @@ This document defines the input and output data formats used between tasks in th
 ```
 
 ## 🔵 Task 3 – Symbolic BDD
-**Input:** `data/reachable_markings.json`
+**Input:** `data/reachable_markings.json`    
 **Output:** `data/bdd_result.json`
 
 ```json
@@ -48,7 +48,7 @@ This document defines the input and output data formats used between tasks in th
 ```
 
 ## ⚫ Task 4 – Deadlock Detection
-**Input:** `data/reachable_markings.json, data/bdd_result.json`
+**Input:** `data/reachable_markings.json, data/bdd_result.json`    
 **Output** `data/deadlocks.json`
 
 ```json
@@ -62,7 +62,7 @@ This document defines the input and output data formats used between tasks in th
 ```
 
 ## 🟣 Task 5 – Optimization
-**Input:** `data/reachable_markings.json`
+**Input:** `data/reachable_markings.json`    
 **Output:** `data/optimization_result.json`
 
 ```json
