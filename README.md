@@ -59,37 +59,6 @@ Assignment-CO2011-CSE251/
 └── README.md
 ```
 
-```
-BTL_MHH
-│
-├── data/                                  ← nơi lưu file PNML và các file output
-│   ├── example.pnml                       # Input PNML mẫu (Task 1)
-│   ├── net_structure.json                 # Output Task 1 – Internal Petri net structure
-│   ├── reachable_markings.json            # Output Task 2 – Explicit reachable markings (BFS/DFS)
-│   ├── bdd_result.json                    # Output Task 3 – Symbolic reachable markings using BDD
-│   ├── deadlocks.json                     # Output Task 4 – Deadlock detection (ILP + BDD)
-│   └── optimization_result.json           # Output Task 5 – Optimization over reachable markings
-│
-├── task1_2_explicit/                      ← các file cho Task 1 và 2 (Explicit approach)
-│   ├── pnml_parser.py                     # Task 1 – Reading PNML files & building internal representation
-│   └── reachable_bfs.py                   # Task 2 – Explicit computation of reachable markings (BFS/DFS)
-│
-├── task3_symbolic_bdd/                    ← các file cho Task 3 (Symbolic approach)
-│   └── symbolic_bdd.py                    # Task 3 – Symbolic computation using Binary Decision Diagram (BDD)
-│
-├── task4_deadlock_ilp/                    ← các file cho Task 4 (Deadlock detection)
-│   └── deadlock_detection.py              # Task 4 – Deadlock detection via ILP and BDD
-│
-├── task5_optimization/                    ← các file cho Task 5 (Optimization)
-│   └── optimization_solver.py             # Task 5 – Optimization over reachable markings
-│
-├── run_all.py                             # Script chạy toàn bộ pipeline từ Task 1 → 5
-├── requirements.txt                       # Danh sách thư viện cần cài (dd, pyeda, pulp, ...)
-├── data_format.md                         # Mô tả chuẩn định dạng input/output của từng Task
-├── .gitignore                             # Bỏ qua file tạm, cache, output JSON, v.v.
-└── README.md                              # Hướng dẫn chạy, cài đặt và mô tả nhóm
-```
-
 ---
 
 ## ⚙️ Setup & Run
