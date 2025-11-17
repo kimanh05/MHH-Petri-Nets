@@ -1,0 +1,32 @@
+{
+  "num_markings": 1,
+  "bdd_nodes": 3,
+  "places": ["p1", "p2"],
+  "build_time_seconds": 0.001,
+
+  "bdd_root": 2,
+
+  "nodes": {
+    "0": { "terminal": 0 },
+    "1": { "terminal": 1 },
+    "2": { "var": "p1", "low": 0, "high": 1 }
+  },
+
+  "lp": {
+    "places": ["p1", "p2"],
+    "transitions": ["t1"],
+
+    "C": [
+      [0],
+      [-1]
+    ],
+
+    "M0": [1, 1],
+
+    "x_bounds": { "lower": 0, "upper": 5 },
+
+    "disable_constraints": [
+      { "transition": "t1", "pre_places": [1] }
+    ]
+  }
+}

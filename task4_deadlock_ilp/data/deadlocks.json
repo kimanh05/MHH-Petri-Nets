@@ -1,0 +1,10 @@
+{
+    "deadlocks_found": true,
+    "deadlock_states": [
+        {
+            "p1": 1,
+            "p2": 0
+        }
+    ],
+    "time_seconds": 0.03388
+}
