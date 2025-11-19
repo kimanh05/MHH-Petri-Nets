@@ -43,7 +43,43 @@ This document defines the input and output data formats used between tasks in th
     "num_markings": 3,
     "bdd_nodes": 10,
     "places": ["p1", "p2", "p3"],
-    "build_time_seconds": 0.0123
+    "build_time_seconds": 0.0123,
+
+    "bdd_root": 8,
+
+    "nodes": {
+        "0": {"terminal": 0},
+        "1": {"terminal": 1},
+        "2": {"var": "p1", "low": 0, "high": 3},
+        "3": {"var": "p2", "low": 1, "high": 0},
+        "4": {"var": "p1", "low": 0, "high": 3}
+    },
+
+    "lp": {
+        "places": ["p1", "p2", "p3"],
+        "transitions": ["t1", "t2"],
+
+        "C": [
+            [-1, 0],
+            [1, -1],
+            [0, 1]
+        ],
+
+        "M0": [1, 0, 0],
+
+        "x_bounds": {"lower": 0, "upper": 20},
+
+        "disable_constraints": [
+            {"transition": "t1", "pre_places": [0]},
+            {"transition": "t2", "pre_places": [1]}
+        ]
+    },
+
+    "mode": "union_only",
+    "stats": {
+        "num_nodes": 10,
+        "cache": 20
+    }
 }
 ```
 
