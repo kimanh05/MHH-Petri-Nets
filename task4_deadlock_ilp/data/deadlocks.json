@@ -1,5 +1,16 @@
 {
+<<<<<<< HEAD
     "deadlocks_found": false,
     "deadlock_states": [],
     "time_seconds": 0.031561
+=======
+    "deadlocks_found": true,
+    "deadlock_states": [
+        {
+            "p1": 1,
+            "p2": 0
+        }
+    ],
+    "time_seconds": 0.03388
+>>>>>>> 6f77a8f7493222aaef6420b98b8a779f8a10b25a
 }
