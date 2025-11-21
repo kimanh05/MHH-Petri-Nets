@@ -55,7 +55,7 @@ class PetriNet:
             elif tag == "transition":
                 tid = elem.attrib.get("id")
                 if not tid:
-                    print("Warning: transition without id")
+                    print("⚠️ Warning: transition without id")
                     continue
                 self.transitions[tid] = True
 

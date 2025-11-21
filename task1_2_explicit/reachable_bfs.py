@@ -96,17 +96,17 @@ if __name__ == "__main__":
 
     # --- write output ---
     with open(output_file, "w", encoding="utf-8") as f:
-        f.write('{\n    "reachable_markings": [\n')
+        f.write('[\n')
         for i, m in enumerate(reachable):
             # convert dict -> "key: value" join lại thành 1 dòng
-            one_line = "{ " + ", ".join(f'"{k}": {v}' for k, v in m.items()) + " }"
+            one_line = "{" + ", ".join(f'"{k}": {v}' for k, v in m.items()) + "}"
 
             # thêm dấu phẩy nếu chưa phải phần tử cuối
             if i < len(reachable) - 1:
-                f.write(f"        {one_line},\n")
+                f.write(f"    {one_line},\n")
             else:
-                f.write(f"        {one_line}\n")
-        f.write("    ]\n}")
+                f.write(f"    {one_line}\n")
+        f.write("]")
 
     print(f"Reachability analysis done! {len(reachable)} markings written to '{output_file}'.")
 
