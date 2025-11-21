@@ -1,0 +1,10 @@
+digraph Incidence {
+    node [shape=plaintext];
+    incidence_table [label=<
+    <table border="1" cellborder="1" cellspacing="0" cellpadding="4">
+      <tr><td></td><td><b>T1</b></td><td><b>T2</b></td></tr>
+      <tr><td><b>P1</b></td><td>-1</td><td>1</td></tr>
+      <tr><td><b>P2</b></td><td>1</td><td>-1</td></tr>
+    </table>
+    >];
+}

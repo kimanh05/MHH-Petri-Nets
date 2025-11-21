@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+  <net id="tc14" type="http://www.pnml.org/version-2009/grammar/ptnet">
+
+    <place id="P0">
+      <initialMarking><text>1</text></initialMarking>
+    </place>
+
+    <transition id="T0"/>
+
+    <arc id="a1" source="P0" target="T0"/>
+    <arc id="a2" source="T0" target="P0"/>
+
+  </net>
+</pnml>

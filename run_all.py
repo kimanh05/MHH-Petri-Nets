@@ -26,21 +26,89 @@ Task 5 (Optimization)
 Kết quả đầu ra lưu trong thư mục `data/`.
 """
 
+"""
+run_all.py – Full Pipeline for 5 Tasks
+"""
 import os
 import subprocess
+import json
+import numpy as np
 
-def run_task(script, description):
-    print(f"\n==============================")
+ROOT = os.path.dirname(os.path.abspath(__file__))
+DATA = os.path.join(ROOT, "data")
+
+def run_task(script_path, description, extra_args=None):
+    print("\n==============================")
     print(f"Running: {description}")
     print("==============================")
-    subprocess.run(["python", script], check=True)
+
+    cmd = ["python", script_path]
+    if extra_args:
+        cmd += extra_args
+
+    subprocess.run(cmd, check=True)
 
 if __name__ == "__main__":
-    run_task("task1_2_explicit/pnml_parser.py", "Task 1 – PNML Parser")
-    run_task("task1_2_explicit/reachable_bfs.py", "Task 2 – Reachable Markings (BFS)")
-    run_task("task3_symbolic_bdd/symbolic_bdd.py", "Task 3 – Symbolic BDD")
-    run_task("task4_deadlock_ilp/deadlock_detection.py", "Task 4 – Deadlock Detection")
-    run_task("task5_optimization/optimization_solver.py", "Task 5 – Optimization")
 
-    print("\n All tasks completed successfully!")
+    # ------------------------------
+    # Ensure data/ directory exists
+    # ------------------------------
+    os.makedirs(DATA, exist_ok=True)
 
+    # ------------------------------
+    # AUTO GENERATE CArr.json IF NEEDED
+    # ------------------------------
+    carr_path = os.path.join(DATA, "CArr.json")
+    if not os.path.exists(carr_path):
+        print("Generating CArr.json ...")
+        c = [1, -1]   # default example
+        with open(carr_path, "w") as f:
+            json.dump(c, f)
+
+    # ------------------------------
+    # TASK 1 – PNML PARSER
+    # ------------------------------
+    run_task(
+        os.path.join(ROOT, "task1_2_explicit", "pnml_parser.py"),
+        "Task 1 – PNML Parser"
+    )
+
+    # ------------------------------
+    # TASK 2 – BFS REACHABILITY
+    # ------------------------------
+    run_task(
+        os.path.join(ROOT, "task1_2_explicit", "reachable_bfs.py"),
+        "Task 2 – Reachability BFS"
+    )
+
+    # ------------------------------
+    # TASK 3 – SYMBOLIC BDD
+    # ------------------------------
+    run_task(
+        os.path.join(ROOT, "task3_symbolic_bdd", "symbolic_bdd.py"),
+        "Task 3 – Symbolic BDD (Union Mode)",
+        extra_args=[
+            "--in", os.path.join(DATA, "reachable_markings.json"),
+            "--out", os.path.join(DATA, "bdd_result.json"),
+            "--net", os.path.join(DATA, "net_structure.json")
+        ]
+    )
+
+    # ------------------------------
+    # TASK 4 – DEADLOCK DETECTION
+    # (NO MORE COPYING INTO task4/data)
+    # ------------------------------
+    run_task(
+        os.path.join(ROOT, "task4_deadlock_ilp", "deadlock_detection.py"),
+        "Task 4 – Deadlock Detection"
+    )
+
+    # ------------------------------
+    # TASK 5 – OPTIMIZATION
+    # ------------------------------
+    run_task(
+        os.path.join(ROOT, "task5_optimization", "optimization_solver.py"),
+        "Task 5 – Optimization"
+    )
+
+    print("\n ALL TASKS COMPLETED SUCCESSFULLY!")

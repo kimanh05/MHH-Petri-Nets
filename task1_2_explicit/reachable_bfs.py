@@ -13,9 +13,9 @@ Output:
 Author:
     Vinh Tien
 """
-
 import json
 from collections import deque
+import os
 
 
 class PetriNet:
@@ -25,46 +25,63 @@ class PetriNet:
         self.arcs = data["arcs"]
         self.initial_marking = data["initial_marking"]
 
-    # --- structure helpers ---
+    # --------------------------------------------------
+    # Helpers
+    # --------------------------------------------------
     def get_inputs(self, transition):
-        """Return list of input places for a given transition."""
+        """Return list of input places for a transition."""
         return [src for src, tgt in self.arcs if tgt == transition and src in self.places]
 
     def get_outputs(self, transition):
-        """Return list of output places for a given transition."""
+        """Return list of output places for a transition."""
         return [tgt for src, tgt in self.arcs if src == transition and tgt in self.places]
 
-    # --- firing logic ---
+    # --------------------------------------------------
+    # Firing rules
+    # --------------------------------------------------
     def is_enabled(self, transition, marking):
-        """Return True if transition is enabled under given marking."""
-        for p in self.get_inputs(transition):
+        """
+        Fix quan trọng:
+        - Transition KHÔNG CÓ INPUT thì không thể enabled trong 1-safe PN.
+        """
+        inputs = self.get_inputs(transition)
+        if len(inputs) == 0:
+            return False  # dead transition
+
+        for p in inputs:
             if marking.get(p, 0) == 0:
                 return False
         return True
 
     def fire(self, transition, marking):
-        """Fire transition and return new marking."""
         new_marking = marking.copy()
+
         for p in self.get_inputs(transition):
             new_marking[p] -= 1
+
         for p in self.get_outputs(transition):
             new_marking[p] += 1
+
         return new_marking
 
 
+# ------------------------------------------------------
+# BFS enumeration
+# ------------------------------------------------------
 def bfs_reachability(net: PetriNet):
-    """Enumerate all reachable markings via BFS."""
+
     start = net.initial_marking
     visited = set()
     queue = deque([start])
     reachable = []
 
     def marking_to_tuple(m):
-        return tuple(m[p] for p in net.places)
+        return tuple(m[p] for p in net.places)  # stable order
 
     while queue:
         current = queue.popleft()
         key = marking_to_tuple(current)
+
         if key in visited:
             continue
 
@@ -75,39 +92,41 @@ def bfs_reachability(net: PetriNet):
             if net.is_enabled(t, current):
                 new_marking = net.fire(t, current)
                 new_key = marking_to_tuple(new_marking)
+
                 if new_key not in visited:
                     queue.append(new_marking)
 
     return reachable
 
 
+# ------------------------------------------------------
+# Main script
+# ------------------------------------------------------
 if __name__ == "__main__":
-    input_file = "net_structure.json"
-    output_file = "reachable_markings.json"
 
-    # --- read Petri net structure ---
+    ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    DATA = os.path.join(ROOT, "data")
+
+    input_file = os.path.join(DATA, "net_structure.json")
+    output_file = os.path.join(DATA, "reachable_markings.json")
+
     with open(input_file, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     net = PetriNet(data)
-
-    # --- compute reachable markings ---
     reachable = bfs_reachability(net)
 
-    # --- write output ---
+    # Write JSON file manually for stable formatting
+    lines = ['[']
+    for i, m in enumerate(reachable):
+        line = "{" + ", ".join(f'"{k}": {v}' for k, v in m.items()) + "}"
+        if i < len(reachable) - 1:
+            lines.append(f"    {line},")
+        else:
+            lines.append(f"    {line}")
+    lines.append("]")
+
     with open(output_file, "w", encoding="utf-8") as f:
-        f.write('[\n')
-        for i, m in enumerate(reachable):
-            # convert dict -> "key: value" join lại thành 1 dòng
-            one_line = "{" + ", ".join(f'"{k}": {v}' for k, v in m.items()) + "}"
+        f.write("\n".join(lines))
 
-            # thêm dấu phẩy nếu chưa phải phần tử cuối
-            if i < len(reachable) - 1:
-                f.write(f"    {one_line},\n")
-            else:
-                f.write(f"    {one_line}\n")
-        f.write("]")
-
-    print(f"Reachability analysis done! {len(reachable)} markings written to '{output_file}'.")
-
-# run: python "C:\Users\ADMIN\Documents\Learning\UniDocs\Documents\HK251\MHH\Assigment 251\MHH-Petri-Nets-main\task1_2_explicit\reachable_bfs.py"
+    print("\n".join(lines))

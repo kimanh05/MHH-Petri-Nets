@@ -1,0 +1,12 @@
+digraph PetriNet {
+    rankdir=LR;
+    node [fontsize=12];
+    "P1" [shape=circle, label="P1 (1)"];
+    "P2" [shape=circle, label="P2"];
+    "T1" [shape=box, style=filled, fillcolor="#eeeeee"];
+    "T2" [shape=box, style=filled, fillcolor="#eeeeee"];
+    "P1" -> "T1";
+    "T1" -> "P2";
+    "P2" -> "T2";
+    "T2" -> "P1";
+}

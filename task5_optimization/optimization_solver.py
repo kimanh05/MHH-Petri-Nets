@@ -17,47 +17,70 @@ Author:
     Thanh Binh
 """
 import time
-import numpy as np
 import json
+import os
+
+
 def read(path):
-    f=open(path,"r")
-    arr=json.load(f)
-    f.close()
-    return arr
-def write(ans,path):
-    f=open(path,"w")
-    f.write(json.dumps(ans))
-    f.close()
-def optimization(markingArr,c):
-    ans=float("-inf")
-    ansArr=[]
-    for markingItem in markingArr:
-        tmp=0
-        i=0
-        for p in markingItem:
-            tmp=tmp+c[i]*markingItem[p]
-            i=i+1
-        if(tmp>ans):
-            ansArr.clear()
-            ans=tmp
-            ansArr.append(markingItem)
-        else:
-            if(tmp==ans): ansArr.append(markingItem)
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
-    return ans,ansArr
+
+def write(obj, path):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(obj, f, indent=4)
+
+
+def optimization(markingArr, c, places):
+    best_val = float("-inf")
+    best_list = []
+
+    for marking in markingArr:
+        # compute c^T M with consistent ordering from places[]
+        tmp = sum(c[i] * marking[p] for i, p in enumerate(places))
+
+        if tmp > best_val:
+            best_val = tmp
+            best_list = [marking]
+        elif tmp == best_val:
+            best_list.append(marking)
+
+    return best_val, best_list
+
+
 def main():
-    markingArr=read("./data/reachable_markings.json")
-    #c=list(np.random.randn(len(markingArr[0])))
-    #write(c,"./data/CArr.json")
-    c=read("./data/CArr.json")
-    start=time.perf_counter()
-    bestVal,bestMarking=optimization(markingArr,c)
-    end=time.perf_counter()
-    ans={
-        "best_marking":bestMarking,
-        "max_value":bestVal,
-        "time_seconds:":end-start
-    }
-    write(ans,"./data/optimization_result.json")
+    ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    DATA = os.path.join(ROOT, "data")
 
-main()
+    marking_path = os.path.join(DATA, "reachable_markings.json")
+    carr_path = os.path.join(DATA, "CArr.json")
+    net_path = os.path.join(DATA, "net_structure.json")
+    out_path = os.path.join(DATA, "optimization_result.json")
+
+    # Load input data
+    markingArr = read(marking_path)
+    c = read(carr_path)
+    net = read(net_path)
+
+    # FIX: Use consistent place ordering from net_structure.json
+    places = net["places"]
+
+    # Optimize
+    start = time.perf_counter()
+    bestVal, bestMarking = optimization(markingArr, c, places)
+    end = time.perf_counter()
+
+    result = {
+        "best_marking": bestMarking,
+        "max_value": bestVal,
+        "time_seconds": end - start
+    }
+
+    write(result, out_path)
+
+    # Print output to terminal
+    print(json.dumps(result, indent=4))
+
+
+if __name__ == "__main__":
+    main()

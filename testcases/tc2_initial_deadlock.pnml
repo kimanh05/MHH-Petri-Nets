@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+  <net id="tc2" type="http://www.pnml.org/version-2009/grammar/ptnet">
+
+    <place id="P0">
+      <initialMarking><text>1</text></initialMarking>
+    </place>
+
+  </net>
+</pnml>

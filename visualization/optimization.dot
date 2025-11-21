@@ -1,0 +1,6 @@
+digraph Optimization {
+    rankdir=LR;
+    node [shape=ellipse, fontsize=10];
+    M0 [label="M0\nP1=1, P2=0" style=filled, fillcolor="#ccffcc"];
+    M1 [label="M1\nP1=0, P2=1" style=filled, fillcolor="#fff2a8"];
+}

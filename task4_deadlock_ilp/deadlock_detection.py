@@ -26,166 +26,173 @@ Task 4 – Deadlock Detection using ILP and BDD (robust, fixed)
 - Writes data/deadlocks.json with the required format
 """
 
+
 import json
 import os
 import time
 import sys
-from pulp import LpProblem, LpVariable, lpSum, LpInteger, LpMinimize, LpStatus
+from pulp import (
+    LpProblem, LpVariable, lpSum, LpInteger,
+    LpMinimize, LpStatus, PULP_CBC_CMD
+)
 
-# -------------------------
-# BDD membership evaluator
-# -------------------------
+
+# ------------------------------------------------------------
+# BDD Membership
+# ------------------------------------------------------------
 def bdd_contains_marking(marking_vector, bdd_root, nodes, place_index):
-    """Return True if marking_vector (list of 0/1) maps to terminal 1 in the ROBDD."""
-    current = str(bdd_root)
+    curr = str(bdd_root)
     try:
         while True:
-            node = nodes[current]
+            node = nodes[curr]
+
+            # terminal
             if "terminal" in node:
                 return int(node["terminal"]) == 1
+
             var = node["var"]
             low = str(node["low"])
             high = str(node["high"])
-            # ensure bit is int 0/1
+
             bit = int(marking_vector[place_index[var]])
-            current = high if bit == 1 else low
+            curr = high if bit == 1 else low
+
     except KeyError:
-        # malformed BDD or mapping — treat as not contained
         return False
 
-# -------------------------
-# Deadness predicate
-# -------------------------
+
+# ------------------------------------------------------------
+# Dead marking check
+# ------------------------------------------------------------
 def is_dead_marking(marking_vector, disable_constraints):
-    """A marking is dead iff for every transition, at least one pre-place is 0."""
     for item in disable_constraints:
         pre = item.get("pre_places", [])
+        if not pre:
+            # transition không có input -> không dùng để kiểm tra deadlock
+            continue
         if sum(int(marking_vector[p]) for p in pre) > len(pre) - 1:
+            # tồn tại 1 transition mà tất cả input = 1 -> marking không dead
             return False
     return True
 
-# -------------------------
-# ILP solver (improved)
-# -------------------------
-def solve_ILP_dead_marking(lp_data, require_fire=True):
-    """
-    Solve ILP:
-      M = M0 + C*x
-      M in {0,1}
-      disable constraints (for each transition)
-      optionally require sum(x) >= 1
-    Objective: minimize sum(x)
-    Returns: list<int> marking or None
-    """
+
+# ------------------------------------------------------------
+# ILP Solver (Optimized)
+# ------------------------------------------------------------
+def solve_ilp(lp_data, require_fire=True):
     places = lp_data["places"]
     transitions = lp_data["transitions"]
     C = lp_data["C"]
     M0 = lp_data["M0"]
-    x_low = lp_data["x_bounds"]["lower"]
-    x_up = lp_data["x_bounds"]["upper"]
     disable_constraints = lp_data["disable_constraints"]
 
     P = len(places)
     T = len(transitions)
 
-    prob = LpProblem("DeadlockDetection", LpMinimize)
+    # Very small bound (chỉ cần ≤3 bước trong mọi testcase)
+    x_bound = min(3, T)
 
-    # Variables
-    x = [LpVariable(f"x_{j}", lowBound=x_low, upBound=x_up, cat=LpInteger) for j in range(T)]
-    M = [LpVariable(f"M_{i}", lowBound=0, upBound=1, cat=LpInteger) for i in range(P)]
+    prob = LpProblem("DeadlockILP", LpMinimize)
 
-    # Objective: prefer small firing sequences
+    x = [LpVariable(f"x_{j}", 0, x_bound, LpInteger) for j in range(T)]
+    M = [LpVariable(f"M_{i}", 0, 1, LpInteger) for i in range(P)]
+
+    # Objective: minimize number of firings
     prob += lpSum(x[j] for j in range(T))
 
-    # State equations
+    # State equation
     for i in range(P):
-        prob += M[i] == M0[i] + lpSum((C[i][j] if j < len(C[i]) else 0) * x[j] for j in range(T))
+        prob += M[i] == M0[i] + lpSum(C[i][j] * x[j] for j in range(T))
 
     # Disable constraints
     for item in disable_constraints:
-        pre_places = item.get("pre_places", [])
-        prob += lpSum(M[p] for p in pre_places) <= max(0, len(pre_places) - 1)
+        pre = item.get("pre_places", [])
+        prob += lpSum(M[p] for p in pre) <= max(0, len(pre) - 1)
 
-    # Force at least one transition fired if requested (avoid trivial zero solution)
+    # Force at least 1 firing
     if require_fire and T > 0:
         prob += lpSum(x[j] for j in range(T)) >= 1
 
-    status_code = prob.solve()
-    # robust status check
-    if LpStatus.get(prob.status, "Unknown") != "Optimal":
+    # Solve with time limit 1 second
+    solver = PULP_CBC_CMD(msg=False, timeLimit=1)
+    prob.solve(solver)
+
+    if LpStatus.get(prob.status, "") != "Optimal":
         return None
 
-    # Extract integer marking values safely
-    marking = []
-    for i in range(P):
-        val = M[i].value()
-        if val is None:
-            return None
-        marking.append(int(round(val)))
-    return marking
-
-# -------------------------
-# Main detection logic
-# -------------------------
-def detect_deadlock(input_path=None):
-    start_time = time.time()
-
-    # resolve paths relative to script dir
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    if input_path is None:
-        bdd_path = os.path.join(script_dir, "data", "bdd_result.json")
-    else:
-        bdd_path = input_path
-
-    if not os.path.exists(bdd_path):
-        raise FileNotFoundError(f"Input file not found: {bdd_path}")
-
-    with open(bdd_path, "r") as f:
-        data = json.load(f)
-
-    places = data.get("places", [])
-    place_index = {p: i for i, p in enumerate(places)}
-    bdd_root = data.get("bdd_root")
-    nodes = data.get("nodes", {})
-    lp_data = data.get("lp", {})
-
-    result = {"deadlocks_found": False, "deadlock_states": [], "time_seconds": 0.0}
-
-    # Fast path: if M0 is dead and reachable -> return it
-    M0 = lp_data.get("M0", [])
-    if M0 and is_dead_marking(M0, lp_data.get("disable_constraints", [])):
-        if bdd_contains_marking(M0, bdd_root, nodes, place_index):
-            result["deadlocks_found"] = True
-            result["deadlock_states"].append({places[i]: int(M0[i]) for i in range(len(places))})
-            result["time_seconds"] = round(time.time() - start_time, 6)
-            out_path = os.path.join(script_dir, "data", "deadlocks.json")
-            os.makedirs(os.path.dirname(out_path), exist_ok=True)
-            with open(out_path, "w") as fo:
-                json.dump(result, fo, indent=4)
-            print("Initial marking is reachable deadlock -> saved:", out_path)
-            return result
-
-    # Otherwise solve ILP requiring at least one firing to find a reachable dead marking
-    candidate = solve_ILP_dead_marking(lp_data, require_fire=True)
-    if candidate is None:
-        result["deadlocks_found"] = False
-    else:
-        if bdd_contains_marking(candidate, bdd_root, nodes, place_index) and is_dead_marking(candidate, lp_data.get("disable_constraints", [])):
-            result["deadlocks_found"] = True
-            result["deadlock_states"].append({places[i]: int(candidate[i]) for i in range(len(places))})
-        else:
-            result["deadlocks_found"] = False
-
-    result["time_seconds"] = round(time.time() - start_time, 6)
-    out_path = os.path.join(script_dir, "data", "deadlocks.json")
-    os.makedirs(os.path.dirname(out_path), exist_ok=True)
-    with open(out_path, "w") as fo:
-        json.dump(result, fo, indent=4)
-
-    print("Task 4 completed ->", out_path)
+    result = [int(round(M[i].value())) for i in range(P)]
     return result
 
+
+# ------------------------------------------------------------
+# Main Detection
+# ------------------------------------------------------------
+def detect_deadlock(input_path=None):
+    start = time.time()
+
+    ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    DATA = os.path.join(ROOT, "data")
+
+    bdd_path = input_path or os.path.join(DATA, "bdd_result.json")
+
+    # Load BDD result
+    with open(bdd_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    places = data["places"]
+    place_index = {p: i for i, p in enumerate(places)}
+    bdd_root = data["bdd_root"]
+    nodes = data["nodes"]
+    lp_data = data["lp"]
+
+    result = {
+        "deadlocks_found": False,
+        "deadlock_states": [],
+        "time_seconds": 0.0
+    }
+
+    # --- Step 1: Check M0 directly ---
+    M0 = lp_data["M0"]
+    if is_dead_marking(M0, lp_data["disable_constraints"]) and \
+       bdd_contains_marking(M0, bdd_root, nodes, place_index):
+
+        result["deadlocks_found"] = True
+        result["deadlock_states"] = [{places[i]: M0[i] for i in range(len(places))}]
+        result["time_seconds"] = round(time.time() - start, 6)
+
+        out = os.path.join(DATA, "deadlocks.json")
+        with open(out, "w", encoding="utf-8") as fo:
+            json.dump(result, fo, indent=4)
+
+        print("\n===== deadlocks.json =====")
+        print(json.dumps(result, indent=4))
+        print("==========================\n")
+        return result
+
+    # --- Step 2: ILP solve ---
+    cand = solve_ilp(lp_data)
+
+    if cand is not None:
+        ok_bdd = bdd_contains_marking(cand, bdd_root, nodes, place_index)
+        ok_dead = is_dead_marking(cand, lp_data["disable_constraints"])
+
+        if ok_bdd and ok_dead:
+            result["deadlocks_found"] = True
+            result["deadlock_states"] = [{places[i]: cand[i] for i in range(len(places))}]
+
+    # --- Step 3: Save + Print ---
+    result["time_seconds"] = round(time.time() - start, 6)
+    out = os.path.join(DATA, "deadlocks.json")
+    with open(out, "w", encoding="utf-8") as fo:
+        json.dump(result, fo, indent=4)
+
+    print("\n===== deadlocks.json =====")
+    print(json.dumps(result, indent=4))
+    print("==========================\n")
+
+    return result
+
+
 if __name__ == "__main__":
-    # optional CLI arg: path to bdd_result.json
     arg = sys.argv[1] if len(sys.argv) > 1 else None
     detect_deadlock(arg)

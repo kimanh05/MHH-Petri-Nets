@@ -30,31 +30,54 @@ All intermediate data between tasks are stored in JSON format for clarity and re
 
 ## 🗂 Folder Structure
 ```
-Assignment-CO2011-CSE251/
+BTL_MHH/
+│
 ├── data/
-│ ├── example.pnml
-│ ├── net_structure.json
-│ ├── reachable_markings.json
-│ ├── bdd_result.json
-│ ├── deadlocks.json
-│ └── optimization_result.json
+│   ├── example.pnml
+│   ├── net_structure.json
+│   ├── reachable_markings.json
+│   ├── bdd_result.json
+│   ├── deadlocks.json
+│   ├── optimization_result.json
+│   ├── CArr.json
+│   └── bdd.dot
 │
 ├── task1_2_explicit/
-│ ├── pnml_parser.py
-│ └── reachable_bfs.py
+│   ├── pnml_parser.py
+│   └── reachable_bfs.py
 │
 ├── task3_symbolic_bdd/
-│ └── symbolic_bdd.py
+│   └── symbolic_bdd.py
 │
 ├── task4_deadlock_ilp/
-│ └── deadlock_detection.py
+│   └── deadlock_detection.py
 │
 ├── task5_optimization/
-│ └── optimization_solver.py
+│   └── optimization_solver.py
+│
+├── testcases/
+│   ├── tc1_deadlock_reachable.pnml
+│   ├── tc2_initial_deadlock.pnml
+│   ├── ...
+│   └── tc15_complex_mix.pnml
+│
+├── visualization/
+│   ├── petrinet.dot
+│   ├── reachable_graph.dot
+│   ├── bdd.dot
+│   ├── incidence.dot
+│   ├── deadlock_graph.dot
+│   ├── optimization.dot
+│   └── bdd_path_M0.dot
 │
 ├── run_all.py
-├── requirements.txt
+├── run_testcase.py
+├── run_all_testcases.py
+├── validate_testcase.py
+├── expected_results.json
+│
 ├── data_format.md
+├── requirements.txt
 ├── .gitignore
 └── README.md
 ```

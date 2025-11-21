@@ -1,0 +1,98 @@
+{
+  "tc1_deadlock_reachable": {
+    "deadlocks_found": true,
+    "deadlock_states": [
+      {"P0": 0, "P1": 1}
+    ]
+  },
+
+  "tc2_initial_deadlock": {
+    "deadlocks_found": true,
+    "deadlock_states": [
+      {"P0": 1}
+    ]
+  },
+
+  "tc3_two_deadlocks": {
+    "deadlocks_found": true,
+    "deadlock_states": [
+      {"P0": 0, "P1": 1, "P2": 0},
+      {"P0": 0, "P1": 0, "P2": 1}
+    ]
+  },
+
+  "tc4_cycle_no_deadlock": {
+    "deadlocks_found": false,
+    "deadlock_states": []
+  },
+
+  "tc5_parallel_concurrency": {
+    "deadlocks_found": false,
+    "deadlock_states": []
+  },
+
+  "tc6_dead_transition": {
+    "deadlocks_found": true,
+    "deadlock_states": [
+      {"P0": 0, "P1": 1}
+    ]
+  },
+
+  "tc7_unreachable_deadlock": {
+    "deadlocks_found": false,
+    "deadlock_states": []
+  },
+
+"tc8_branch_merge_cycle": {
+  "deadlocks_found": true,
+  "deadlock_states": [
+    {"P0": 0, "P1": 1, "P2": 0}
+  ]
+},
+
+  "tc9_and_join": {
+  "deadlocks_found": true,
+  "deadlock_states": [
+    {"P0": 0, "P1": 0, "P2": 1}
+  ]
+}
+,
+
+  "tc10_fork": {
+    "deadlocks_found": true,
+    "deadlock_states": [
+      {"P0": 0, "P1": 1, "P2": 1}
+    ]
+  },
+
+  "tc11_trap": {
+    "deadlocks_found": true,
+    "deadlock_states": [
+      {"P0": 0, "P1": 1}
+    ]
+  },
+
+  "tc12_siphon_deadlock": {
+    "deadlocks_found": true,
+    "deadlock_states": [
+      {"A": 0, "B": 0, "C": 1}
+    ]
+  },
+
+  "tc13_big_cycle": {
+    "deadlocks_found": false,
+    "deadlock_states": []
+  },
+
+  "tc14_self_loop": {
+    "deadlocks_found": false,
+    "deadlock_states": []
+  },
+
+  "tc15_complex_mix": {
+    "deadlocks_found": true,
+    "deadlock_states": [
+      {"P0": 0, "P1": 0, "P2": 0, "P3": 0, "Trap": 1}
+    ]
+  }
+}

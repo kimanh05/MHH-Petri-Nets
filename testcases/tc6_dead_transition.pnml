@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+  <net id="tc6" type="http://www.pnml.org/version-2009/grammar/ptnet">
+
+    <place id="P0"><initialMarking><text>1</text></initialMarking></place>
+    <place id="P1"><initialMarking><text>0</text></initialMarking></place>
+
+    <transition id="T1"/>
+    <transition id="T2"/>
+
+    <arc id="a1" source="P0" target="T1"/>
+    <arc id="a2" source="T1" target="P1"/>
+
+    <!-- T2 không có input nên không bao giờ enabled -->
+    <arc id="a3" source="T2" target="P0"/>
+
+  </net>
+</pnml>
