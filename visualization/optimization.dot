@@ -1,6 +1,23 @@
 digraph Optimization {
     rankdir=LR;
     node [shape=ellipse, fontsize=10];
-    M0 [label="M0\nP1=1, P2=0" style=filled, fillcolor="#ccffcc"];
-    M1 [label="M1\nP1=0, P2=1" style=filled, fillcolor="#fff2a8"];
+    M0 [label="M0\nP0=1, P1=0, P2=0, P3=0, P4=0, P5=0, P6=0, P7=0, P8=0, P9=0" style=filled, fillcolor="#ccffcc"];
+    M1 [label="M1\nP0=0, P1=1, P2=1, P3=0, P4=0, P5=0, P6=0, P7=0, P8=0, P9=0" ];
+    M2 [label="M2\nP0=0, P1=0, P2=1, P3=1, P4=0, P5=0, P6=0, P7=0, P8=0, P9=0" ];
+    M3 [label="M3\nP0=0, P1=1, P2=0, P3=0, P4=1, P5=0, P6=0, P7=0, P8=0, P9=0" ];
+    M4 [label="M4\nP0=0, P1=0, P2=0, P3=1, P4=1, P5=0, P6=0, P7=0, P8=0, P9=0" ];
+    M5 [label="M5\nP0=0, P1=0, P2=1, P3=0, P4=0, P5=1, P6=0, P7=0, P8=0, P9=0" ];
+    M6 [label="M6\nP0=0, P1=0, P2=2, P3=0, P4=0, P5=0, P6=0, P7=0, P8=0, P9=0" ];
+    M7 [label="M7\nP0=0, P1=1, P2=0, P3=0, P4=0, P5=0, P6=1, P7=0, P8=0, P9=0" ];
+    M8 [label="M8\nP0=0, P1=0, P2=0, P3=0, P4=1, P5=1, P6=0, P7=0, P8=0, P9=0" ];
+    M9 [label="M9\nP0=0, P1=0, P2=0, P3=1, P4=0, P5=0, P6=1, P7=0, P8=0, P9=0" ];
+    M10 [label="M10\nP0=0, P1=0, P2=1, P3=0, P4=1, P5=0, P6=0, P7=0, P8=0, P9=0" ];
+    M11 [label="M11\nP0=0, P1=0, P2=0, P3=0, P4=0, P5=1, P6=1, P7=0, P8=0, P9=0" ];
+    M12 [label="M12\nP0=0, P1=0, P2=1, P3=0, P4=0, P5=0, P6=1, P7=0, P8=0, P9=0" ];
+    M13 [label="M13\nP0=0, P1=0, P2=0, P3=0, P4=2, P5=0, P6=0, P7=0, P8=0, P9=0" style=filled, fillcolor="#fff2a8"];
+    M14 [label="M14\nP0=0, P1=0, P2=0, P3=0, P4=0, P5=0, P6=0, P7=1, P8=0, P9=0" ];
+    M15 [label="M15\nP0=0, P1=0, P2=0, P3=0, P4=1, P5=0, P6=1, P7=0, P8=0, P9=0" ];
+    M16 [label="M16\nP0=0, P1=0, P2=0, P3=0, P4=0, P5=0, P6=0, P7=0, P8=1, P9=0" ];
+    M17 [label="M17\nP0=0, P1=0, P2=0, P3=0, P4=0, P5=0, P6=2, P7=0, P8=0, P9=0" ];
+    M18 [label="M18\nP0=0, P1=0, P2=0, P3=0, P4=0, P5=0, P6=0, P7=0, P8=0, P9=1" ];
 }

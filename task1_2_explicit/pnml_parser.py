@@ -42,9 +42,7 @@ class PetriNet:
         self.arcs = []
         self._parse_pnml()
 
-    # ----------------------------------------------------------------------
     # Parse PNML and extract nodes + arcs
-    # ----------------------------------------------------------------------
     def _parse_pnml(self):
         if not os.path.exists(self.filename):
             raise PNMLFormatError(f"Error: PNML file not found: {self.filename}")
@@ -91,9 +89,7 @@ class PetriNet:
         self._validate_structure()
         self._validate_arcs()
 
-    # ----------------------------------------------------------------------
     # Check node existence validity
-    # ----------------------------------------------------------------------
     def _validate_structure(self):
         if len(self.places) == 0:
             raise PNMLFormatError("Error: PNML contains no places.")
@@ -102,9 +98,7 @@ class PetriNet:
             # Allowed by assignment, but warn
             print("Warning: PNML contains no transitions.")
 
-    # ----------------------------------------------------------------------
     # Validate arcs
-    # ----------------------------------------------------------------------
     def _validate_arcs(self):
         valid_arcs = []
 
@@ -130,9 +124,7 @@ class PetriNet:
 
         self.arcs = valid_arcs
 
-    # ----------------------------------------------------------------------
     # Convert to dictionary
-    # ----------------------------------------------------------------------
     def to_dict(self):
         return {
             "places": list(self.places.keys()),
@@ -141,9 +133,7 @@ class PetriNet:
             "initial_marking": self.places
         }
 
-    # ----------------------------------------------------------------------
     # Write JSON + print to terminal
-    # ----------------------------------------------------------------------
     def save_json(self, output_file: str):
         data = self.to_dict()
 
@@ -166,7 +156,6 @@ class PetriNet:
             lines[-1] = lines[-1].rstrip(" ,")
         lines.append("    ],")
 
-        # initial marking
         im_str = ", ".join(f"\"{p}\": {m}" for p, m in data["initial_marking"].items())
         lines.append(f"    \"initial_marking\": {{{im_str}}}")
 
@@ -174,14 +163,8 @@ class PetriNet:
 
         with open(output_file, "w", encoding="utf-8") as f:
             f.write("\n".join(lines))
-
-        # also print output
         print("\n".join(lines))
 
-
-# ----------------------------------------------------------------------
-# MAIN
-# ----------------------------------------------------------------------
 if __name__ == "__main__":
     ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     DATA = os.path.join(ROOT, "data")

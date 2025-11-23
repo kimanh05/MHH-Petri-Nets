@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+  <net id="tc20" type="http://www.pnml.org/version-2009/grammar/ptnet">
+
+    <place id="Start"><initialMarking><text>1</text></initialMarking></place>
+    <place id="Good"><initialMarking><text>0</text></initialMarking></place>
+    <place id="Trap"><initialMarking><text>0</text></initialMarking></place>
+
+    <transition id="Tgood"/>
+    <transition id="Ttrap"/>
+
+    <arc id="a1" source="Start" target="Tgood"/>
+    <arc id="a2" source="Tgood" target="Good"/>
+
+    <arc id="a3" source="Start" target="Ttrap"/>
+    <arc id="a4" source="Ttrap" target="Trap"/>
+
+  </net>
+</pnml>

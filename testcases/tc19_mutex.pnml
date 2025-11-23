@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+  <net id="tc19" type="http://www.pnml.org/version-2009/grammar/ptnet">
+
+    <place id="Free"><initialMarking><text>1</text></initialMarking></place>
+    <place id="P1"><initialMarking><text>0</text></initialMarking></place>
+    <place id="P2"><initialMarking><text>0</text></initialMarking></place>
+
+    <transition id="Tenter1"/>
+    <transition id="Texit1"/>
+    <transition id="Tenter2"/>
+    <transition id="Texit2"/>
+
+    <arc id="a1" source="Free" target="Tenter1"/>
+    <arc id="a2" source="Tenter1" target="P1"/>
+    <arc id="a3" source="P1" target="Texit1"/>
+    <arc id="a4" source="Texit1" target="Free"/>
+
+    <arc id="a5" source="Free" target="Tenter2"/>
+    <arc id="a6" source="Tenter2" target="P2"/>
+    <arc id="a7" source="P2" target="Texit2"/>
+    <arc id="a8" source="Texit2" target="Free"/>
+
+  </net>
+</pnml>

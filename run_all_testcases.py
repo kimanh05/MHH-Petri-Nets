@@ -59,7 +59,7 @@ def main():
     testcases = list(expected.keys())
 
     print("\n==============================")
-    print(" Running ALL 15 TESTCASES ")
+    print(" Running ALL 21 TESTCASES ")
     print("==============================\n")
 
     results = []
@@ -82,7 +82,7 @@ def main():
             print(f"[FAIL] {tc}: {msg}\n")
 
     print("\n==============================")
-    print(" SUMMARY RESULTS (TC1–TC15) ")
+    print(" SUMMARY RESULTS (TC1–TC21) ")
     print("==============================\n")
 
     for tc, status in results:

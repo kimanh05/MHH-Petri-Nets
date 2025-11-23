@@ -17,11 +17,9 @@ def run_testcase(tc_name):
 
     print(f"\n=== Running Testcase: {tc_name} ===")
 
-    # copy file
     shutil.copy(tc_file, target)
     print(f"Copied testcase to: {target}")
 
-    # run full pipeline
     subprocess.run(["python", os.path.join(ROOT, "run_all.py")], check=True)
 
     print("\n=== DONE ===\n")
