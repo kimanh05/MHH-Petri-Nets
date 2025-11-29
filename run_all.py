@@ -12,8 +12,7 @@ Task 2 (BFS Reachability)
    Output: reachable_markings.json
         ↓
 Task 3 (Symbolic BDD)
-   Input: reachable_markings.json
-   Output: bdd_result.json
+   Input: net_structure.json
         ↓
 Task 4 (Deadlock Detection)
    Input: reachable_markings.json + bdd_result.json
@@ -29,10 +28,21 @@ Kết quả đầu ra lưu trong thư mục `data/`.
 """
 run_all.py – Full Pipeline for 5 Tasks
 """
+"""
+run_all.py – Full Pipeline for 5 Tasks
+--------------------------------------
+Chạy toàn bộ assignment theo đúng thứ tự:
+
+Task 1 – Parse PNML
+Task 2 – BFS Reachability (không dùng cho Task 3 nhưng vẫn phải chạy)
+Task 3 – SYMBOLIC BDD (đã FIX chạy symbolic mode)
+Task 4 – Deadlock Detection
+Task 5 – Optimization
+"""
+
 import os
 import subprocess
 import json
-import numpy as np
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(ROOT, "data")
@@ -82,21 +92,20 @@ if __name__ == "__main__":
     )
 
     # ------------------------------
-    # TASK 3 – SYMBOLIC BDD
+    # TASK 3 – SYMBOLIC BDD  (FIXED)
     # ------------------------------
     run_task(
         os.path.join(ROOT, "task3_symbolic_bdd", "symbolic_bdd.py"),
-        "Task 3 – Symbolic BDD (Union Mode)",
+        "Task 3 – Symbolic BDD (SYMBOLIC MODE)",
         extra_args=[
-            "--in", os.path.join(DATA, "reachable_markings.json"),
-            "--out", os.path.join(DATA, "bdd_result.json"),
-            "--net", os.path.join(DATA, "net_structure.json")
+            "--symbolic",
+            "--net", os.path.join(DATA, "net_structure.json"),
+            "--out", os.path.join(DATA, "bdd_result.json")
         ]
     )
 
     # ------------------------------
     # TASK 4 – DEADLOCK DETECTION
-    # (NO MORE COPYING INTO task4/data)
     # ------------------------------
     run_task(
         os.path.join(ROOT, "task4_deadlock_ilp", "deadlock_detection.py"),

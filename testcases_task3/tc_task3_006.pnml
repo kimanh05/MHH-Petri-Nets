@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pnml>
+  <net id="tc_task3_006_fix" type="http://www.pnml.org/version-2009/grammar/ptnet">
+
+    <!-- Places -->
+    <place id="P1"><initialMarking><text>1</text></initialMarking></place>
+    <place id="P2"/>
+    <place id="P3"/>
+    <place id="P4"/>
+    <place id="P5"/>
+
+    <!-- Transitions -->
+    <transition id="T1"/>
+    <transition id="T2"/>
+    <transition id="T3"/>
+    <transition id="T4"/>
+
+    <!-- T1: P1 → P2, P3, P4 -->
+    <arc source="P1" target="T1"/>
+    <arc source="T1" target="P2"/>
+    <arc source="T1" target="P3"/>
+    <arc source="T1" target="P4"/>
+
+    <!-- T2: P2 → P1 -->
+    <arc source="P2" target="T2"/>
+    <arc source="T2" target="P1"/>
+
+    <!-- T3: P4, P5 → P1 -->
+    <arc source="P4" target="T3"/>
+    <arc source="P5" target="T3"/>
+    <arc source="T3" target="P1"/>
+
+    <!-- T4: P3 → P5 -->
+    <arc source="P3" target="T4"/>
+    <arc source="T4" target="P5"/>
+
+  </net>
+</pnml>

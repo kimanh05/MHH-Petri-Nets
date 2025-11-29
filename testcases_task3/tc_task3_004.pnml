@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<pnml>
+  <net id="tc3_004">
+
+    <place id="P1"><initialMarking><text>1</text></initialMarking></place>
+    <place id="P2"/><place id="P3"/><place id="P4"/>
+    <place id="P5"/><place id="P6"/><place id="P7"/>
+
+    <transition id="T1"/>
+    <transition id="T2"/>
+    <transition id="T3"/>
+    <transition id="T4"/>
+    <transition id="T5"/>
+    <transition id="T6"/>
+    <transition id="T7"/>
+    <transition id="T8"/>
+
+    <arc source="P1" target="T1"/>
+    <arc source="T1" target="P2"/>
+    <arc source="T1" target="P5"/>
+
+    <arc source="P4" target="T2"/>
+    <arc source="P6" target="T2"/>
+    <arc source="T2" target="P7"/>
+
+    <arc source="P2" target="T3"/>
+    <arc source="T3" target="P3"/>
+
+    <arc source="P3" target="T4"/>
+    <arc source="T4" target="P4"/>
+
+    <arc source="P5" target="T5"/>
+    <arc source="T5" target="P6"/>
+
+  </net>
+</pnml>

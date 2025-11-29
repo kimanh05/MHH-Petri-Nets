@@ -13,6 +13,7 @@ Output:
 Author:
     Vinh Tien
 """
+
 import json
 from collections import deque
 import os
@@ -23,44 +24,62 @@ class PetriNet:
         self.places = data["places"]
         self.transitions = data["transitions"]
         self.arcs = data["arcs"]
-        self.initial_marking = data["initial_marking"]
+
+        # FIX: convert marking to int (critical!)
+        self.initial_marking = {k: int(v) for k, v in data["initial_marking"].items()}
 
     # --------------------------------------------------
     # Helpers
     # --------------------------------------------------
     def get_inputs(self, transition):
-        """Return list of input places for a transition."""
+        """List of input places for transition."""
         return [src for src, tgt in self.arcs if tgt == transition and src in self.places]
 
     def get_outputs(self, transition):
-        """Return list of output places for a transition."""
+        """List of output places for transition."""
         return [tgt for src, tgt in self.arcs if src == transition and tgt in self.places]
 
     # --------------------------------------------------
-    # Firing rules
+    # 1-SAFE FIRING RULE
     # --------------------------------------------------
     def is_enabled(self, transition, marking):
         """
-        Fix quan trọng:
-        - Transition KHÔNG CÓ INPUT thì không thể enabled trong 1-safe PN.
+        1-safe firing rules:
+        ✔ Transition must have at least 1 input
+        ✔ All input places must contain token = 1
+        ✔ All output places must be empty (0)
         """
-        inputs = self.get_inputs(transition)
-        if len(inputs) == 0:
-            return False  # dead transition
 
+        inputs = self.get_inputs(transition)
+        outputs = self.get_outputs(transition)
+
+        # Rule 1: Must have input
+        if len(inputs) == 0:
+            return False
+
+        # Rule 2: All input places must contain token
         for p in inputs:
-            if marking.get(p, 0) == 0:
+            if int(marking.get(p, 0)) == 0:
                 return False
+
+        # Rule 3: All output places must be empty
+        for p in outputs:
+            if int(marking.get(p, 0)) == 1:
+                return False
+
         return True
 
     def fire(self, transition, marking):
+        """Fire transition under 1-safe assumption."""
         new_marking = marking.copy()
 
+        # Consume tokens
         for p in self.get_inputs(transition):
-            new_marking[p] -= 1
+            new_marking[p] = 0
 
+        # Produce tokens (always safe)
         for p in self.get_outputs(transition):
-            new_marking[p] += 1
+            new_marking[p] = 1
 
         return new_marking
 
@@ -75,12 +94,12 @@ def bfs_reachability(net: PetriNet):
     queue = deque([start])
     reachable = []
 
-    def marking_to_tuple(m):
-        return tuple(m[p] for p in net.places)  # stable order
+    def marking_key(m):
+        return tuple(m[p] for p in net.places)
 
     while queue:
         current = queue.popleft()
-        key = marking_to_tuple(current)
+        key = marking_key(current)
 
         if key in visited:
             continue
@@ -91,7 +110,7 @@ def bfs_reachability(net: PetriNet):
         for t in net.transitions:
             if net.is_enabled(t, current):
                 new_marking = net.fire(t, current)
-                new_key = marking_to_tuple(new_marking)
+                new_key = marking_key(new_marking)
 
                 if new_key not in visited:
                     queue.append(new_marking)
@@ -116,8 +135,8 @@ if __name__ == "__main__":
     net = PetriNet(data)
     reachable = bfs_reachability(net)
 
-    # Write JSON file manually for stable formatting
-    lines = ['[']
+    # Write JSON with stable formatting
+    lines = ["["]
     for i, m in enumerate(reachable):
         line = "{" + ", ".join(f'"{k}": {v}' for k, v in m.items()) + "}"
         if i < len(reachable) - 1:

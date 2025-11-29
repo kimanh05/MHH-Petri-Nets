@@ -2,17 +2,12 @@ digraph Incidence {
     node [shape=plaintext];
     incidence_table [label=<
     <table border="1" cellborder="1" cellspacing="0" cellpadding="4">
-      <tr><td></td><td><b>T1</b></td><td><b>T2</b></td><td><b>T3</b></td><td><b>T4</b></td><td><b>T5</b></td><td><b>T6</b></td><td><b>T7</b></td><td><b>T8</b></td><td><b>T9</b></td><td><b>T10</b></td></tr>
-      <tr><td><b>P2</b></td><td>1</td><td>0</td><td>-1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td></tr>
-      <tr><td><b>P4</b></td><td>0</td><td>0</td><td>1</td><td>0</td><td>-1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
-      <tr><td><b>P6</b></td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>-1</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
-      <tr><td><b>P1</b></td><td>1</td><td>-1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
-      <tr><td><b>P3</b></td><td>0</td><td>1</td><td>0</td><td>-1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>-1</td></tr>
-      <tr><td><b>P5</b></td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>-1</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
-      <tr><td><b>P0</b></td><td>-1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td></tr>
-      <tr><td><b>P7</b></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>-1</td><td>0</td><td>0</td><td>0</td></tr>
-      <tr><td><b>P8</b></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>-1</td><td>0</td><td>0</td></tr>
-      <tr><td><b>P9</b></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>-1</td><td>0</td></tr>
+      <tr><td></td><td><b>T1</b></td><td><b>T2</b></td><td><b>T3</b></td><td><b>T4</b></td></tr>
+      <tr><td><b>P1</b></td><td>-1</td><td>1</td><td>1</td><td>0</td></tr>
+      <tr><td><b>P4</b></td><td>1</td><td>0</td><td>-1</td><td>0</td></tr>
+      <tr><td><b>P2</b></td><td>1</td><td>-1</td><td>0</td><td>0</td></tr>
+      <tr><td><b>P3</b></td><td>1</td><td>0</td><td>0</td><td>-1</td></tr>
+      <tr><td><b>P5</b></td><td>0</td><td>0</td><td>-1</td><td>1</td></tr>
     </table>
     >];
 }
