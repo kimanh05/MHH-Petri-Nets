@@ -20,7 +20,6 @@ import time
 import json
 import os
 
-
 # -------- JSON Helpers --------
 def jload(path):
     with open(path, "r", encoding="utf-8") as f:
@@ -39,12 +38,13 @@ def optimize(reachable_markings, c, places):
     c: vector of weights (list of int)
     places: fixed ordering of places
     """
+    if len(reachable_markings)==0:return None,None
     best_val = float("-inf")
     best_list = []
 
     for marking in reachable_markings:
         # Compute c^T M with respect to given place ordering
-        value = sum(c[i] * marking.get(p, 0) for i, p in enumerate(places))
+        value = sum(c.get(p,0) * marking.get(p, 0) for p in places)
 
         if value > best_val:
             best_val = value
@@ -62,7 +62,6 @@ def main():
 
     # Input paths
     reach_path = os.path.join(DATA, "reachable_markings.json")
-    carr_path = os.path.join(DATA, "CArr.json")
     net_path = os.path.join(DATA, "net_structure.json")
 
     # Output path
@@ -72,12 +71,12 @@ def main():
     reach_data = jload(reach_path)
     reachable_markings = reach_data.get("reachable_markings", [])
 
-    c = jload(carr_path)
     net = jload(net_path)
 
     # Use consistent place ordering from net_structure.json
     places = net["places"]
-
+    # Create C array with all value=1
+    c={p:1 for p in places}
     # ---- Optimize ----
     start = time.perf_counter()
     max_val, best_markings = optimize(reachable_markings, c, places)
