@@ -113,11 +113,11 @@ class PetriNet:
 
             # forbidden arcs
             if src in self.places and tgt in self.places:
-                raise PNMLFormatError(f"Error: Invalid arc place→place: {src} → {tgt}")
+                raise PNMLFormatError(f"Error: Invalid arc place -> place: {src} -> {tgt}")
 
             if src in self.transitions and tgt in self.transitions:
                 raise PNMLFormatError(
-                    f"Error: Invalid arc transition→transition: {src} → {tgt}"
+                    f"Error: Invalid arc transition→transition: {src} -> {tgt}"
                 )
 
             valid_arcs.append([src, tgt])
