@@ -117,7 +117,7 @@ class PetriNet:
 
             if src in self.transitions and tgt in self.transitions:
                 raise PNMLFormatError(
-                    f"Error: Invalid arc transition→transition: {src} -> {tgt}"
+                    f"Error: Invalid arc transition -> transition: {src} -> {tgt}"
                 )
 
             valid_arcs.append([src, tgt])
