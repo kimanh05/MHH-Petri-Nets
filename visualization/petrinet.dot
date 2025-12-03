@@ -1,24 +1,19 @@
 digraph PetriNet {
     rankdir=LR;
-    node [fontsize=12];
     "P1" [shape=circle, label="P1 (1)"];
     "P2" [shape=circle, label="P2"];
     "P3" [shape=circle, label="P3"];
     "P4" [shape=circle, label="P4"];
-    "P5" [shape=circle, label="P5"];
     "T1" [shape=box, style=filled, fillcolor="#eeeeee"];
     "T2" [shape=box, style=filled, fillcolor="#eeeeee"];
     "T3" [shape=box, style=filled, fillcolor="#eeeeee"];
     "T4" [shape=box, style=filled, fillcolor="#eeeeee"];
     "P1" -> "T1";
     "T1" -> "P2";
-    "T1" -> "P3";
-    "T1" -> "P4";
     "P2" -> "T2";
-    "T2" -> "P1";
-    "P4" -> "T3";
-    "P5" -> "T3";
-    "T3" -> "P1";
+    "T2" -> "P4";
+    "P1" -> "T3";
+    "T3" -> "P3";
     "P3" -> "T4";
-    "T4" -> "P5";
+    "T4" -> "P4";
 }

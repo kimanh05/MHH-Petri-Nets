@@ -1,69 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<pnml>
-  <net id="tc21_big_bdd_stress" type="http://www.pnml.org/version-2009/grammar/ptnet">
+<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+  <net id="net1" type="http://www.pnml.org/version-2009/grammar/pnmlcoremodel">
+    <name>
+      <text>small_two_path_example</text>
+    </name>
 
-    <!-- Places -->
-    <place id="P0"><initialMarking><text>1</text></initialMarking></place>
-    <place id="P1"><initialMarking><text>0</text></initialMarking></place>
-    <place id="P2"><initialMarking><text>0</text></initialMarking></place>
-    <place id="P3"><initialMarking><text>0</text></initialMarking></place>
-    <place id="P4"><initialMarking><text>0</text></initialMarking></place>
-    <place id="P5"><initialMarking><text>0</text></initialMarking></place>
-    <place id="P6"><initialMarking><text>0</text></initialMarking></place>
-    <place id="P7"><initialMarking><text>0</text></initialMarking></place>
-    <place id="P8"><initialMarking><text>0</text></initialMarking></place>
-    <place id="P9"><initialMarking><text>0</text></initialMarking></place>
+    <page id="page1">
 
-    <!-- Transitions -->
-    <transition id="T1"/>
-    <transition id="T2"/>
-    <transition id="T3"/>
-    <transition id="T4"/>
-    <transition id="T5"/>
-    <transition id="T6"/>
-    <transition id="T7"/>
-    <transition id="T8"/>
-    <transition id="T9"/>
-    <transition id="T10"/>
+      <!-- Places -->
+      <place id="P1">
+        <name><text>P1</text></name>
+        <initialMarking><text>1</text></initialMarking>
+      </place>
 
-    <!-- Fan-out branching -->
-    <arc id="a01" source="P0" target="T1"/>
-    <arc id="a02" source="T1" target="P1"/>
-    <arc id="a03" source="T1" target="P2"/>
+      <place id="P2">
+        <name><text>P2</text></name>
+        <initialMarking><text>0</text></initialMarking>
+      </place>
 
-    <!-- Parallel fork -->
-    <arc id="a11" source="P1" target="T2"/>
-    <arc id="a12" source="T2" target="P3"/>
+      <place id="P3">
+        <name><text>P3</text></name>
+        <initialMarking><text>0</text></initialMarking>
+      </place>
 
-    <arc id="a13" source="P2" target="T3"/>
-    <arc id="a14" source="T3" target="P4"/>
+      <place id="P4">
+        <name><text>P4</text></name>
+        <initialMarking><text>0</text></initialMarking>
+      </place>
 
-    <!-- More branching -->
-    <arc id="a21" source="P3" target="T4"/>
-    <arc id="a22" source="T4" target="P5"/>
+      <!-- Transitions -->
+      <transition id="T1">
+        <name><text>T1</text></name>
+      </transition>
 
-    <arc id="a23" source="P4" target="T5"/>
-    <arc id="a24" source="T5" target="P6"/>
+      <transition id="T2">
+        <name><text>T2</text></name>
+      </transition>
 
-    <!-- AND-join -->
-    <arc id="a31" source="P5" target="T6"/>
-    <arc id="a32" source="P6" target="T6"/>
-    <arc id="a33" source="T6" target="P7"/>
+      <transition id="T3">
+        <name><text>T3</text></name>
+      </transition>
 
-    <!-- Long chain to make BDD deeper -->
-    <arc id="a41" source="P7" target="T7"/>
-    <arc id="a42" source="T7" target="P8"/>
+      <transition id="T4">
+        <name><text>T4</text></name>
+      </transition>
 
-    <arc id="a43" source="P8" target="T8"/>
-    <arc id="a44" source="T8" target="P9"/>
+      <!-- Arcs: top path P1 -> T1 -> P2 -> T2 -> P4 -->
+      <arc id="A1" source="P1" target="T1"/>
+      <arc id="A2" source="T1" target="P2"/>
+      <arc id="A3" source="P2" target="T2"/>
+      <arc id="A4" source="T2" target="P4"/>
 
-    <!-- Cycle back -->
-    <arc id="a51" source="P9" target="T9"/>
-    <arc id="a52" source="T9" target="P0"/>
+      <!-- Arcs: bottom path P1 -> T3 -> P3 -> T4 -> P4 -->
+      <arc id="A5" source="P1" target="T3"/>
+      <arc id="A6" source="T3" target="P3"/>
+      <arc id="A7" source="P3" target="T4"/>
+      <arc id="A8" source="T4" target="P4"/>
 
-    <!-- Extra internal cycle to expand state space -->
-    <arc id="a61" source="P3" target="T10"/>
-    <arc id="a62" source="T10" target="P2"/>
-
+    </page>
   </net>
 </pnml>

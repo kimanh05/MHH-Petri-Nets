@@ -1,13 +1,12 @@
 digraph Incidence {
     node [shape=plaintext];
     incidence_table [label=<
-    <table border="1" cellborder="1" cellspacing="0" cellpadding="4">
-      <tr><td></td><td><b>T1</b></td><td><b>T2</b></td><td><b>T3</b></td><td><b>T4</b></td></tr>
-      <tr><td><b>P1</b></td><td>-1</td><td>1</td><td>1</td><td>0</td></tr>
-      <tr><td><b>P4</b></td><td>1</td><td>0</td><td>-1</td><td>0</td></tr>
-      <tr><td><b>P2</b></td><td>1</td><td>-1</td><td>0</td><td>0</td></tr>
-      <tr><td><b>P3</b></td><td>1</td><td>0</td><td>0</td><td>-1</td></tr>
-      <tr><td><b>P5</b></td><td>0</td><td>0</td><td>-1</td><td>1</td></tr>
+    <table border='1' cellborder='1' cellspacing='0'>
+<tr><td></td><td>T1</td><td>T2</td><td>T3</td><td>T4</td></tr>
+<tr><td>P1</td><td>-1</td><td>0</td><td>-1</td><td>0</td></tr>
+<tr><td>P2</td><td>1</td><td>-1</td><td>0</td><td>0</td></tr>
+<tr><td>P3</td><td>0</td><td>0</td><td>1</td><td>-1</td></tr>
+<tr><td>P4</td><td>0</td><td>1</td><td>0</td><td>1</td></tr>
     </table>
     >];
 }
