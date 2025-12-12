@@ -1,10 +1,11 @@
-# 🧮 Mathematical Modeling Assignment – Petri Nets
-### HCMC University of Technology - Faculty of Computer Science & Engineering
+# 🧮 Bài tập lớn Mô hình hóa Toán học – Petri Nets
+### Trường Đại học Bách Khoa – ĐHQG TP.HCM  
+### Khoa Khoa học & Kỹ thuật Máy tính  
 
 ---
 
-## 👥 Group 33
-| Member | Student ID | Class | Task |
+## 👥 Nhóm 33
+| Thành viên | MSSV | Lớp | Nhiệm vụ |
 |:---------------------------|:-----------:|:------:|:--------|
 | **Phạm Thảo Ngọc** | 2312318 | TN02 | Task 3 |
 | **Nguyễn Thị Kim Anh** | 2310123 | TN02 | Task 3 |
@@ -14,133 +15,95 @@
 
 ---
 
-## 📘 Project Overview
-This project implements Petri Net analysis methods as part of the **Mathematical Modeling (CO2011 / CSE251)** course.  
-It consists of five main tasks:
+## 📘 Giới thiệu
+Petri Net là mô hình toán học dùng để mô tả hành vi của các hệ thống song song và dựa trên sự kiện thông qua **place, transition và token**.  
 
-1. **PNML Parser** – Reads a 1-safe Petri Net from a PNML file and constructs its internal representation.  
-2. **Reachable Markings (BFS/DFS)** – Enumerates all reachable markings from the initial marking.  
-3. **Symbolic BDD Computation** – Uses Binary Decision Diagrams to represent and compute reachable markings symbolically.  
-4. **Deadlock Detection (ILP + BDD)** – Combines ILP formulation and symbolic BDD to detect reachable deadlocks.  
-5. **Optimization** – Finds a reachable marking that maximizes a given linear objective function \( c^T M \).
+Trong bài tập lớn này, nhóm hiện thực **pipeline gồm 5 nhiệm vụ**:
 
-All intermediate data between tasks are stored in JSON format for clarity and reusability.
+1. **Task 1:** Phân tích file PNML và sinh cấu trúc mạng.  
+2. **Task 2:** Tính reachable markings bằng BFS/DFS.  
+3. **Task 3:** Phân tích reachability bằng BDD.  
+4. **Task 4:** Phát hiện deadlock bằng BDD + ILP.  
+5. **Task 5:** Tối ưu hóa tuyến tính trên tập reachable.
+
+Báo cáo tập trung vào thiết kế cài đặt, kết quả thực nghiệm và so sánh hai phương pháp **explicit** và **symbolic**.
 
 ---
 
-## 🗂 Folder Structure
-```
+## 🗂 Cấu trúc thư mục
 BTL_MHH/
 │
 ├── data/
-│   ├── example.pnml
-│   ├── net_structure.json
-│   ├── reachable_markings.json
-│   ├── bdd_result.json
-│   ├── deadlocks.json
-│   ├── optimization_result.json
-│   ├── CArr.json
-│   └── bdd.dot
+│ ├── example.pnml
+│ ├── net_structure.json
+│ ├── reachable_markings.json
+│ ├── bdd_result.json
+│ ├── deadlocks.json
+│ ├── optimization_result.json
+│ └── ...
 │
 ├── task1_2_explicit/
-│   ├── pnml_parser.py
-│   └── reachable_bfs.py
+│ ├── pnml_parser.py
+│ └── reachable_bfs.py
 │
 ├── task3_symbolic_bdd/
-│   └── symbolic_bdd.py
+│ └── symbolic_bdd.py
 │
 ├── task4_deadlock_ilp/
-│   └── deadlock_detection.py
+│ └── deadlock_detection.py
 │
 ├── task5_optimization/
-│   └── optimization_solver.py
-│
-├── testcases/
-│   ├── tc1_deadlock_reachable.pnml
-│   ├── tc2_initial_deadlock.pnml
-│   ├── ...
-│   └── tc15_complex_mix.pnml
-│
-├── visualization/
-│   ├── petrinet.dot
-│   ├── reachable_graph.dot
-│   ├── bdd.dot
-│   ├── incidence.dot
-│   ├── deadlock_graph.dot
-│   ├── optimization.dot
-│   └── bdd_path_M0.dot
+│ └── optimization_solver.py
 │
 ├── run_all.py
 ├── run_testcase.py
 ├── run_all_testcases.py
 ├── validate_testcase.py
-├── expected_results.json
-│
-├── data_format.md
-├── requirements.txt
-├── .gitignore
 └── README.md
-```
+
 
 ---
 
-## ⚙️ Setup & Run
+## ⚙️ Cách chạy chương trình
 
-### 1️⃣ Installation
-Make sure you have **Python ≥ 3.10** installed.  
-Then install all required libraries:
+### 1️⃣ Cài đặt môi trường
+Yêu cầu Python **≥ 3.10**  
+Cài đặt thư viện:
+
 ```bash
 pip install -r requirements.txt
 ```
-2️⃣ Run Full Pipeline
-To execute all five tasks sequentially:
+2️⃣ Chạy toàn bộ pipeline
 
-```bash
+```
 python run_all.py
 ```
-Each step will generate its corresponding output JSON file under the data/ directory.
 
-📊 Input / Output Summary
-
-| Task | Input | Output | Description |
-|------|--------|---------|-------------|
-| 1 | `example.pnml` | `net_structure.json` | Parse PNML and extract Petri Net structure |
-| 2 | `net_structure.json` | `reachable_markings.json` | Compute all reachable markings (BFS/DFS) |
-| 3 | `reachable_markings.json` | `bdd_result.json` | Build symbolic BDD and count reachable states |
-| 4 | `reachable_markings.json`, `bdd_result.json` | `deadlocks.json` | Detect deadlocks via ILP + BDD |
-| 5 | `reachable_markings.json` | `optimization_result.json` | Maximize linear objective function over reachable markings |
-
-```
-📈 Example Workflow
+Tất cả kết quả sẽ sinh trong thư mục data/.
+📈 Workflow
 Task 1 (Parser)
-   Input: example.pnml
+   Input : example.pnml
    Output: net_structure.json
         ↓
 Task 2 (BFS Reachability)
-   Input: net_structure.json
+   Input : net_structure.json
    Output: reachable_markings.json
         ↓
 Task 3 (Symbolic BDD)
-   Input: reachable_markings.json
+   Input : net_structure.json
    Output: bdd_result.json
         ↓
 Task 4 (Deadlock Detection)
-   Input: reachable_markings.json + bdd_result.json
+   Input : reachable_markings.json + bdd_result.json
    Output: deadlocks.json
         ↓
 Task 5 (Optimization)
-   Input: reachable_markings.json
+   Input : reachable_markings.json
    Output: optimization_result.json
-```
-🔗 References
 
-PNML Standard: https://www.pnml.org/
+🔗 Tham khảo
 
-BDD Library: dd
-
-ILP Solver: PuLP
-
-Mathematical Modeling Course Material – HCMUT, 2025–2026
-
-📍 Semester 1, 2025–2026 — CO2011 Mathematical Modeling
-
+PNML Standard – https://www.pnml.org/
+BDD package: dd
+ILP solver: PuLP
+CO2011 – Mathematical Modeling, HK251

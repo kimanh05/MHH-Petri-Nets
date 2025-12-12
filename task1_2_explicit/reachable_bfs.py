@@ -18,9 +18,15 @@ import json
 import time
 from collections import deque
 import os
+import sys
 
+
+# ============================================================
+# Petri Net Model
+# ============================================================
 
 class PetriNet:
+    """Simple 1-safe Petri net supporting BFS reachability."""
     def __init__(self, data):
         self.places = data["places"]
         self.transitions = data["transitions"]
@@ -30,28 +36,34 @@ class PetriNet:
         self.initial_marking = {k: int(v) for k, v in data["initial_marking"].items()}
 
     # --------------------------------------------------
-    # Helpers
+    # Helper methods
     # --------------------------------------------------
     def get_inputs(self, transition):
+        """Return preset of transition t."""
         return [src for src, tgt in self.arcs if tgt == transition and src in self.places]
 
     def get_outputs(self, transition):
+        """Return postset of transition t."""
         return [tgt for src, tgt in self.arcs if src == transition and tgt in self.places]
 
     # --------------------------------------------------
-    # 1-SAFE FIRING RULE
+    # 1-safe enabling rule
     # --------------------------------------------------
     def is_enabled(self, transition, marking):
+        """Check whether transition t is enabled under marking m."""
         inputs = self.get_inputs(transition)
         outputs = self.get_outputs(transition)
 
         if len(inputs) == 0:
+            # no preset → cannot fire
             return False
 
+        # All inputs must have a token
         for p in inputs:
             if int(marking.get(p, 0)) == 0:
                 return False
 
+        # All outputs must be empty
         for p in outputs:
             if int(marking.get(p, 0)) == 1:
                 return False
@@ -59,6 +71,7 @@ class PetriNet:
         return True
 
     def fire(self, transition, marking):
+        """Return the new marking after firing transition t."""
         new_marking = marking.copy()
 
         for p in self.get_inputs(transition):
@@ -70,11 +83,12 @@ class PetriNet:
         return new_marking
 
 
-# ------------------------------------------------------
-# BFS enumeration
-# ------------------------------------------------------
-def bfs_reachability(net: PetriNet):
+# ============================================================
+# BFS Reachability
+# ============================================================
 
+def bfs_reachability(net: PetriNet):
+    """Perform BFS to compute all reachable markings."""
     start = net.initial_marking
     visited = set()
     queue = deque([start])
@@ -93,6 +107,7 @@ def bfs_reachability(net: PetriNet):
         visited.add(key)
         reachable.append(current)
 
+        # Try firing all transitions
         for t in net.transitions:
             if net.is_enabled(t, current):
                 new_marking = net.fire(t, current)
@@ -104,9 +119,10 @@ def bfs_reachability(net: PetriNet):
     return reachable
 
 
-# ------------------------------------------------------
-# Main script
-# ------------------------------------------------------
+# ============================================================
+# MAIN SCRIPT
+# ============================================================
+
 if __name__ == "__main__":
 
     ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -115,25 +131,37 @@ if __name__ == "__main__":
     input_file = os.path.join(DATA, "net_structure.json")
     output_file = os.path.join(DATA, "reachable_markings.json")
 
+    # Load net structure
     with open(input_file, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     net = PetriNet(data)
 
-    # === Measure time ===
+    # Measure time
     t0 = time.perf_counter()
     reachable = bfs_reachability(net)
     build_time = round(time.perf_counter() - t0, 6)
 
-    # Prepare final output dictionary
+    # ------------------------------------------------------------
+    # NEW — Estimate memory usage
+    # ------------------------------------------------------------
+    num_markings = len(reachable)
+
+    # Each marking ≈ (#places bytes) -> approximate as 32 bytes each
+    memory_bytes = num_markings * 32
+    memory_usage_mb = memory_bytes / (1024 * 1024)
+
+    # Prepare final output
     output_data = {
         "reachable_markings": reachable,
-        "num_markings": len(reachable),
-        "build_time_seconds": build_time
+        "num_markings": num_markings,
+        "build_time_seconds": build_time,
+        "memory_usage_mb": round(memory_usage_mb, 6)
     }
 
-    # Write JSON nicely
+    # Save output
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(output_data, f, indent=4)
 
+    # Print to terminal
     print(json.dumps(output_data, indent=4))

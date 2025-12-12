@@ -47,10 +47,11 @@ import json
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(ROOT, "data")
 
+
 def run_task(script_path, description, extra_args=None):
-    print("\n==============================")
-    print(f"Running: {description}")
-    print("==============================")
+    print("\n===================================")
+    print(f"[RUN] {description}")
+    print("===================================")
 
     cmd = ["python", script_path]
     if extra_args:
@@ -58,66 +59,70 @@ def run_task(script_path, description, extra_args=None):
 
     subprocess.run(cmd, check=True)
 
+
 if __name__ == "__main__":
 
-    # ------------------------------
+    # ------------------------------------------------------------
     # Ensure data/ directory exists
-    # ------------------------------
+    # ------------------------------------------------------------
     os.makedirs(DATA, exist_ok=True)
 
-    # ------------------------------
-    # AUTO GENERATE CArr.json IF NEEDED
-    # ------------------------------
+    # ------------------------------------------------------------
+    # (Optional) Auto-generate CArr.json if missing
+    # ------------------------------------------------------------
     carr_path = os.path.join(DATA, "CArr.json")
     if not os.path.exists(carr_path):
-        print("Generating CArr.json ...")
-        c = [1, -1]   # default example
+        print("Generating CArr.json (default example)...")
         with open(carr_path, "w") as f:
-            json.dump(c, f)
+            json.dump([1, -1], f)
 
-    # ------------------------------
+    # ------------------------------------------------------------
     # TASK 1 – PNML PARSER
-    # ------------------------------
+    # ------------------------------------------------------------
     run_task(
         os.path.join(ROOT, "task1_2_explicit", "pnml_parser.py"),
         "Task 1 – PNML Parser"
     )
 
-    # ------------------------------
+    # ------------------------------------------------------------
     # TASK 2 – BFS REACHABILITY
-    # ------------------------------
+    # ------------------------------------------------------------
     run_task(
         os.path.join(ROOT, "task1_2_explicit", "reachable_bfs.py"),
-        "Task 2 – Reachability BFS"
+        "Task 2 – Explicit Reachability BFS"
     )
 
-    # ------------------------------
-    # TASK 3 – SYMBOLIC BDD  (FIXED)
-    # ------------------------------
+    # ------------------------------------------------------------
+    # TASK 3 – SYMBOLIC BDD (NEW VERSION)
+    #   symbolic_bdd.py does NOT use --symbolic anymore
+    # ------------------------------------------------------------
     run_task(
         os.path.join(ROOT, "task3_symbolic_bdd", "symbolic_bdd.py"),
-        "Task 3 – Symbolic BDD (SYMBOLIC MODE)",
+        "Task 3 – Symbolic BDD",
         extra_args=[
-            "--symbolic",
             "--net", os.path.join(DATA, "net_structure.json"),
-            "--out", os.path.join(DATA, "bdd_result.json")
+            "--out", os.path.join(DATA, "bdd_result.json"),
+            "--order", ""    # or custom variable ordering
         ]
     )
 
-    # ------------------------------
-    # TASK 4 – DEADLOCK DETECTION
-    # ------------------------------
+    # ------------------------------------------------------------
+    # TASK 4 – DEADLOCK DETECTION (uses bdd_result.json)
+    # ------------------------------------------------------------
     run_task(
         os.path.join(ROOT, "task4_deadlock_ilp", "deadlock_detection.py"),
-        "Task 4 – Deadlock Detection"
+        "Task 4 – Deadlock Detection",
+        extra_args=[os.path.join(DATA, "bdd_result.json")]
     )
 
-    # ------------------------------
+    # ------------------------------------------------------------
     # TASK 5 – OPTIMIZATION
-    # ------------------------------
+    # ------------------------------------------------------------
     run_task(
         os.path.join(ROOT, "task5_optimization", "optimization_solver.py"),
         "Task 5 – Optimization"
     )
 
-    print("\n ALL TASKS COMPLETED SUCCESSFULLY!")
+    print("\n===================================")
+    print(" ALL TASKS COMPLETED SUCCESSFULLY! ")
+    print("===================================\n")

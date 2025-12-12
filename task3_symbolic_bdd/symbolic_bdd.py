@@ -3,18 +3,10 @@ Task 3 – Symbolic Computation of Reachable Markings using BDD
 --------------------------------------------------------------
 Description:
     Encodes reachable markings symbolically using Binary Decision Diagrams (BDDs).
-    Supports two modes:
-        (1) union_only  – encode explicit reachable markings (Task 2) into a BDD.
-        (2) symbolic    – compute reachable markings symbolically using fixpoint iteration.
-    Returns a BDD representing either:
-        • explicit reachable set (union_only), or
-        • symbolic reachable set (symbolic).
     Also builds LP information for Task 4 (deadlock analysis).
 
 Input:
-    data/reachable_markings.json (union_only)
     data/net_structure.json      (symbolic)
-
 Output:
     data/bdd_result.json
 
@@ -22,53 +14,48 @@ Author:
     Kim Anh - Thao Ngoc
 """
 
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import json
-import time
-import os
-import argparse
-from typing import Dict, List, Optional, Set
+import json, time, os, argparse
+from typing import Dict, List, Set
 
-# =========================== Utility ===========================
-
-def load_json(path: str):
-    """Load a JSON file with UTF-8 encoding."""
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-# =========================== BDD ===========================
+# ============================================================
+# BDD / ROBDD ENGINE
+# ============================================================
 
 class BDD:
     """
-    A minimal BDD implementation supporting:
-        - Unique-table (ROBDD invariant)
-        - apply(f AND g), apply(f OR g)
-        - existential abstraction ∃
-        - renaming variables
-        - building cube from marking
+    Minimal implementation of a Reduced Ordered Binary Decision Diagram (ROBDD).
+
+    Features:
+        - Unique table ensuring canonical form.
+        - Apply-cache to memoize AND/OR operations.
+        - Existential quantification (used in Post-image computation).
+        - Variable renaming (map s' → s).
+        - Cube construction for initial markings.
+        - Symbolic model counting (SATCOUNT) to count reachable markings.
     """
 
     def __init__(self, var_order: List[str]):
-        # Ordered list of variables (important for ROBDD)
+        # Global variable ordering for all BDD nodes
         self.var_order = var_order
-        self.var_to_idx = {v: i for i, v in enumerate(var_order)}
+        self.var_to_idx = {v:i for i,v in enumerate(var_order)}
 
-        # Node 0 = terminal false, node 1 = terminal true
-        self.nodes = [(None, None, None), (None, None, None)]
-        self.unique = {}   # (var,low,high) → node_id
+        # Terminal nodes: index 0 = False, index 1 = True
+        self.nodes = [(None,None,None), (None,None,None)]
 
-        # memoization for AND/OR
+        # Unique-table stores canonical nodes: (var,low,high) → index
+        self.unique = {}
+
+        # Cache for repeated AND/OR operations
         self.cache = {}
 
-    # ----------------------------------------------------------------------
-
+    # --------------------------------------------------------
     def mk(self, var: str, low: int, high: int) -> int:
-        """Return or create a new BDD node for var?(low):(high), using unique-table."""
+        """Create a BDD node or reuse an existing one."""
+        # Reduction rule: if low == high, skip node
         if low == high:
-            # redundant variable → return child
             return low
 
         key = (var, low, high)
@@ -80,518 +67,454 @@ class BDD:
         self.nodes.append((self.var_to_idx[var], low, high))
         return idx
 
-    # ----------------------------------------------------------------------
-
+    # --------------------------------------------------------
     def apply_and(self, u1: int, u2: int) -> int:
-        """Apply AND between two BDD nodes."""
-        if u1 > u2:   # canonical ordering for caching
-            u1, u2 = u2, u1
-
+        """Apply logical AND to two BDD nodes."""
+        if u1 > u2:
+            u1,u2 = u2,u1
         key = ("and", u1, u2)
+
         if key in self.cache:
             return self.cache[key]
 
-        # terminal cases
+        # Terminal cases
         if u1 == 0 or u2 == 0:
-            return 0
-        if u1 == 1:
-            return u2
-        if u2 == 1:
-            return u1
-
-        # recursive AND
-        v1, l1, h1 = self.nodes[u1]
-        v2, l2, h2 = self.nodes[u2]
-
-        # same variable → standard Shannon expansion
-        if v1 == v2:
-            low  = self.apply_and(l1, l2)
-            high = self.apply_and(h1, h2)
-            res = self.mk(self.var_order[v1], low, high)
-
-        # variable order decides branching
-        elif v1 < v2:
-            low  = self.apply_and(l1, u2)
-            high = self.apply_and(h1, u2)
-            res = self.mk(self.var_order[v1], low, high)
+            res = 0
+        elif u1 == 1:
+            res = u2
+        elif u2 == 1:
+            res = u1
         else:
-            low  = self.apply_and(u1, l2)
-            high = self.apply_and(u1, h2)
-            res = self.mk(self.var_order[v2], low, high)
+            v1,l1,h1 = self.nodes[u1]
+            v2,l2,h2 = self.nodes[u2]
+
+            if v1 == v2:
+                low  = self.apply_and(l1, l2)
+                high = self.apply_and(h1, h2)
+                res = self.mk(self.var_order[v1], low, high)
+
+            elif v1 < v2:
+                low  = self.apply_and(l1, u2)
+                high = self.apply_and(h1, u2)
+                res = self.mk(self.var_order[v1], low, high)
+
+            else:
+                low  = self.apply_and(u1, l2)
+                high = self.apply_and(u1, h2)
+                res = self.mk(self.var_order[v2], low, high)
 
         self.cache[key] = res
         return res
 
-    # ----------------------------------------------------------------------
-
+    # --------------------------------------------------------
     def apply_or(self, u1: int, u2: int) -> int:
-        """Apply OR between two BDD nodes."""
+        """Apply logical OR to two nodes."""
         if u1 > u2:
-            u1, u2 = u2, u1
+            u1,u2 = u2,u1
+        key = ("or",u1,u2)
 
-        key = ("or", u1, u2)
         if key in self.cache:
             return self.cache[key]
 
         if u1 == 1 or u2 == 1:
-            return 1
-        if u1 == 0:
-            return u2
-        if u2 == 0:
-            return u1
-
-        v1, l1, h1 = self.nodes[u1]
-        v2, l2, h2 = self.nodes[u2]
-
-        if v1 == v2:
-            low  = self.apply_or(l1, l2)
-            high = self.apply_or(h1, h2)
-            res = self.mk(self.var_order[v1], low, high)
-
-        elif v1 < v2:
-            low  = self.apply_or(l1, u2)
-            high = self.apply_or(h1, u2)
-            res = self.mk(self.var_order[v1], low, high)
-
+            res = 1
+        elif u1 == 0:
+            res = u2
+        elif u2 == 0:
+            res = u1
         else:
-            low  = self.apply_or(u1, l2)
-            high = self.apply_or(u1, h2)
-            res = self.mk(self.var_order[v2], low, high)
+            v1,l1,h1 = self.nodes[u1]
+            v2,l2,h2 = self.nodes[u2]
+
+            if v1 == v2:
+                low  = self.apply_or(l1, l2)
+                high = self.apply_or(h1, h2)
+                res = self.mk(self.var_order[v1], low, high)
+
+            elif v1 < v2:
+                low  = self.apply_or(l1, u2)
+                high = self.apply_or(h1, u2)
+                res = self.mk(self.var_order[v1], low, high)
+
+            else:
+                low  = self.apply_or(u1, l2)
+                high = self.apply_or(u1, h2)
+                res = self.mk(self.var_order[v2], low, high)
 
         self.cache[key] = res
         return res
 
-    # ----------------------------------------------------------------------
-
-    def cube_from_marking(self, marking: Dict[str, int], over_vars: List[str]) -> int:
+    # --------------------------------------------------------
+    def exists(self, vars_to_eliminate: Set[str], u: int) -> int:
         """
-        Encode Boolean cube:
-            v = 1 → literal (v=1)
-            v = 0 → literal (v=0)
-            missing vars → unconstrained
+        Existential quantification: ∃x. f
+        Used during Post-image computation to remove old-state variables.
         """
-        res = 1  # TRUE
+        if u <= 1:
+            return u
 
-        for v in over_vars:
-            if v not in marking:
-                continue
-            val = marking[v]
-            if val == 1:
+        var_idx, low, high = self.nodes[u]
+        name = self.var_order[var_idx]
+
+        low2  = self.exists(vars_to_eliminate, low)
+        high2 = self.exists(vars_to_eliminate, high)
+
+        if name in vars_to_eliminate:
+            return self.apply_or(low2, high2)
+        return self.mk(name, low2, high2)
+
+    # --------------------------------------------------------
+    def rename(self, u: int, mapping: Dict[str,str]) -> int:
+        """Rename variables according to mapping, e.g., p' → p."""
+        if u <= 1:
+            return u
+
+        var_idx, low, high = self.nodes[u]
+        old = self.var_order[var_idx]
+        new = mapping.get(old, old)
+
+        low2  = self.rename(low,  mapping)
+        high2 = self.rename(high, mapping)
+        return self.mk(new, low2, high2)
+
+    # --------------------------------------------------------
+    def cube_from_marking(self, marking:Dict[str,int], vars_list:List[str]) -> int:
+        """Construct a Boolean cube representing the marking."""
+        res = 1
+        for v in vars_list:
+            if marking.get(v,0) == 1:
                 lit = self.mk(v, 0, 1)
             else:
                 lit = self.mk(v, 1, 0)
             res = self.apply_and(res, lit)
-
         return res
 
-    # ----------------------------------------------------------------------
+    # --------------------------------------------------------
+    def count_solutions(self, root:int, vars_list:List[str]) -> int:
+        """
+        Count the number of satisfying assignments over vars_list.
+        Standard SATCOUNT using BDD recursion.
+        """
+        memo = {}
 
+        def dfs(u, pos):
+            if (u,pos) in memo:
+                return memo[(u,pos)]
 
-    def exists(self, vars_to_eliminate: Set[str], u: int) -> int:
-        """Existential abstraction ∃ variables."""
-        if u <= 1:
-            return u
+            if u == 0:
+                return 0
+            if u == 1:
+                rem = len(vars_list) - pos
+                return 1 << rem
 
-        var_idx, low, high = self.nodes[u]
-        var = self.var_order[var_idx]
+            v_idx, low, high = self.nodes[u]
+            name = self.var_order[v_idx]
 
-        low_  = self.exists(vars_to_eliminate, low)
-        high_ = self.exists(vars_to_eliminate, high)
+            while pos < len(vars_list) and vars_list[pos] != name:
+                pos += 1
 
-        if var in vars_to_eliminate:
-            # eliminate var → OR of branches
-            return self.apply_or(low_, high_)
-        else:
-            return self.mk(var, low_, high_)
+            c_low  = dfs(low,  pos+1)
+            c_high = dfs(high, pos+1)
 
-    # ----------------------------------------------------------------------
+            memo[(u,pos)] = c_low + c_high
+            return memo[(u,pos)]
 
-    def rename(self, u: int, mapping: Dict[str, str]) -> int:
-        """Rename variables (p' → p)."""
-        if u <= 1:
-            return u
+        return dfs(root, 0)
 
-        var_idx, low, high = self.nodes[u]
-        old_name = self.var_order[var_idx]
-        new_name = mapping.get(old_name, old_name)
+# ============================================================
+# Helper functions
+# ============================================================
 
-        low_  = self.rename(low, mapping)
-        high_ = self.rename(high, mapping)
-
-        return self.mk(new_name, low_, high_)
-
-    # ----------------------------------------------------------------------
-
-    @property
-    def stats(self):
-        """Return simple statistics for debugging."""
-        return {
-            "num_nodes": len(self.nodes),
-            "cache": len(self.cache),
-        }
-
-
-# =========================== Helper Functions ===========================
-
-def choose_var_order_from_markings(markings, user_order):
-    """Heuristic variable ordering: sort by frequency of being 1."""
-    if user_order:
-        return user_order
-
-    freq = {}
-    for m in markings:
-        for p, v in m.items():
-            if v == 1:
-                freq[p] = freq.get(p, 0) + 1
-
-    return sorted(freq.keys(), key=lambda x: -freq[x])
-
-# ------------------------------------------------------------------------
-
-def or_reduce_balanced(bdd, lst):
-    """Balanced OR tree to reduce depth → improves performance."""
-    if not lst:
-        return 0
-    while len(lst) > 1:
-        new = []
-        for i in range(0, len(lst), 2):
-            if i + 1 < len(lst):
-                new.append(bdd.apply_or(lst[i], lst[i + 1]))
-            else:
-                new.append(lst[i])
-        lst = new
-    return lst[0]
-
-# ------------------------------------------------------------------------
+def load_json(path):
+    with open(path,"r",encoding="utf-8") as f:
+        return json.load(f)
 
 def derive_preset_postset(net):
-    """Extract Pre(t) and Post(t) from arcs list."""
-    arcs = net.get("arcs", [])
-    pre, post = {}, {}
-
-    for (u, v) in arcs:
-        if u in net["places"]:
-            pre.setdefault(v, set()).add(u)
-        else:
-            post.setdefault(u, set()).add(v)
-
-    return {"pre": pre, "post": post}
-
-# ------------------------------------------------------------------------
-
-def build_T_relation(bdd, places, pre, post, next_suffix="'"):
     """
-    Build precise 1-safe transition relation T(s,s').
+    Construct Pre(t) and Post(t) sets from arc structure.
+    """
+    places = set(net["places"])
+    pre, post = {}, {}
+    for u,v in net["arcs"]:
+        if u in places:
+            pre.setdefault(v,set()).add(u)
+        else:
+            post.setdefault(u,set()).add(v)
+    return {"pre":pre,"post":post}
 
-    For each transition t:
-        Before firing (s):
-            - p = 1  for all p in Pre(t)
-            - p = 0  for all p in Post(t)
-        After firing (s'):
-            - p' = 0 for all p in Pre(t)
-            - p' = 1 for all p in Post(t)
-            - p' = p for all other places
+def or_reduce(bdd, lst):
+    """Balanced OR-reduction for a list of BDD nodes."""
+    if not lst:
+        return 0
+    s = lst
+    while len(s) > 1:
+        nxt=[]
+        for i in range(0,len(s),2):
+            if i+1 < len(s):
+                nxt.append(bdd.apply_or(s[i], s[i+1]))
+            else:
+                nxt.append(s[i])
+        s = nxt
+    return s[0]
+
+# ============================================================
+# Transition relation encoding
+# ============================================================
+
+def build_T_relation(bdd, places, pre, post, nxt="'"):
+    """
+    Encode the transition relation T(s,s') as an ROBDD.
+    For each transition t, we encode:
+        • Pre-places must be 1
+        • Post-places become 1 in next state
+        • Pre-places become 0 (token consumed)
+        • Unchanged places satisfy (p' == p)
     """
 
     clauses = []
 
-    for t in pre.keys() | post.keys():
-        cube_before = {}
-        cube_after = {}
+    for t in sorted(pre.keys() | post.keys()):
+        lits = []
+        pre_t  = pre.get(t, set())
+        post_t = post.get(t, set())
 
+        # BEFORE firing: all pre-places must be 1
+        for p in pre_t:
+            lits.append(bdd.mk(p, 0, 1))
+
+        # AFTER firing: determine next-state value for each place
         for p in places:
-            # ---------------- BEFORE ----------------
-            if p in pre[t]:
-                cube_before[p] = 1
-            elif p in post[t]:
-                cube_before[p] = 0
-            # else: don't restrict p in before-state
-
-            # ---------------- AFTER ----------------
-            if p in pre[t]:
-                cube_after[p + next_suffix] = 0
-            elif p in post[t]:
-                cube_after[p + next_suffix] = 1
+            if p in pre_t:
+                lits.append(bdd.mk(p+nxt, 1, 0))     # consumed → 0
+            elif p in post_t:
+                lits.append(bdd.mk(p+nxt, 0, 1))     # produced → 1
             else:
-                # unchanged place → p' = p
-                cube_after[p + next_suffix] = None  # we encode equality later
+                # unchanged: encode equality p' = p
+                eq = bdd.mk(
+                    p,
+                    bdd.mk(p+nxt, 1,0),   # p=0 → p'=0
+                    bdd.mk(p+nxt, 0,1)    # p=1 → p'=1
+                )
+                lits.append(eq)
 
-        # Build cube(s) over all variables
-        # p' = p is encoded as:
-        #     (p=0 ∧ p'=0) OR (p=1 ∧ p'=1)
-        # → But we embed equalities by expanding both sides in cube_from_marking
-        #
-        # To do it efficiently, we build:
-        #     cube = AND( before_literals ∧ after_literals(with p'=p constraint) )
-        #
-
-        # Step 1: Build list of literals for this transition
-        literals = []
-
-        # Encode before-state constraints
-        for p, v in cube_before.items():
-            if v == 1:
-                literals.append(bdd.mk(p, 0, 1))
-            else:
-                literals.append(bdd.mk(p, 1, 0))
-
-        # Encode after-state constraints
-        for p in places:
-            key = p + next_suffix
-            v = cube_after.get(key)
-
-            if v is None:
-                # encode p' = p as (p=0 & p'=0) OR (p=1 & p'=1)
-                lit0 = bdd.apply_and(bdd.mk(p, 1, 0), bdd.mk(key, 1, 0))
-                lit1 = bdd.apply_and(bdd.mk(p, 0, 1), bdd.mk(key, 0, 1))
-                eq_lit = bdd.apply_or(lit0, lit1)
-                literals.append(eq_lit)
-
-            elif v == 1:
-                literals.append(bdd.mk(key, 0, 1))
-            else:
-                literals.append(bdd.mk(key, 1, 0))
-
-        # Combine all literals with AND
+        # AND all literals of this transition
         clause = 1
-        for lit in literals:
+        for lit in lits:
             clause = bdd.apply_and(clause, lit)
-
         clauses.append(clause)
 
-    return or_reduce_balanced(bdd, clauses)
+    return or_reduce(bdd, clauses)
 
+# ============================================================
+# LP builder (Task 4)
+# ============================================================
 
-# =========================== EXPORT HELPERS ===========================
-
-def export_bdd_nodes_dict(bdd: BDD) -> Dict[str, dict]:
-    """Export BDD nodes in JSON-friendly format."""
-    nodes_dict = {"0": {"terminal": 0}, "1": {"terminal": 1}}
-
-    for nid in range(2, len(bdd.nodes)):
-        var_idx, low, high = bdd.nodes[nid]
-        vname = bdd.var_order[var_idx]
-        nodes_dict[str(nid)] = {"var": vname, "low": low, "high": high}
-
-    return nodes_dict
-
-# ------------------------------------------------------------------------
-
-def build_incidence_and_lp(net_path: str, places_order: list, x_upper: int = 20):
+def build_incidence_and_lp(net_path, places_order):
     """
-    Build incidence matrix and LP constraints for Task 4 (deadlock detection).
-    This is not used by symbolic reachability, but required for the pipeline.
+    Construct incidence matrix C, initial marking M0,
+    and disabling constraints for ILP deadlock detection (Task 4).
     """
     net = load_json(net_path)
-    places = list(places_order)
-    p_to_i = {p: i for i, p in enumerate(places)}
+    places = places_order
+    pidx = {p:i for i,p in enumerate(places)}
 
-    arcs = net.get("arcs", [])
-    trans_names = net.get("transitions")
+    arcs = net["arcs"]
+    trans = net.get("transitions")
 
-    # infer transition names if absent
-    if not trans_names:
-        Tset = set()
-        for u, v in arcs:
-            if u not in p_to_i:
-                Tset.add(u)
-            if v not in p_to_i:
-                Tset.add(v)
-        trans_names = sorted(Tset)
+    # infer transition list if missing
+    if not trans:
+        T=set()
+        for u,v in arcs:
+            if u not in pidx: T.add(u)
+            if v not in pidx: T.add(v)
+        trans = sorted(T)
 
-    t_to_j = {t: j for j, t in enumerate(trans_names)}
+    tidx = {t:i for i,t in enumerate(trans)}
 
-    # build pre / post
-    pre = {t: set() for t in trans_names}
-    post = {t: set() for t in trans_names}
+    pre={t:set() for t in trans}
+    post={t:set() for t in trans}
 
-    for u, v in arcs:
-        if u in p_to_i and v in t_to_j:
+    for u,v in arcs:
+        if u in pidx and v in tidx:
             pre[v].add(u)
-        elif u in t_to_j and v in p_to_i:
+        elif u in tidx and v in pidx:
             post[u].add(v)
 
-    # build incidence matrix C
-    C = [[0 for _ in trans_names] for _ in places]
-    for t in trans_names:
-        j = t_to_j[t]
+    C=[[0]*len(trans) for _ in places]
+
+    for t in trans:
+        j=tidx[t]
         for p in pre[t]:
-            C[p_to_i[p]][j] -= 1
+            C[pidx[p]][j] -= 1
         for p in post[t]:
-            C[p_to_i[p]][j] += 1
+            C[pidx[p]][j] += 1
 
-    # initial marking vector
-    M0_src = net.get("initial_marking", {})
-    M0 = [int(M0_src.get(p, 0)) for p in places]
+    M0src = net["initial_marking"]
+    M0=[int(M0src.get(p,0)) for p in places]
 
-    # "disable transition" constraints for ILP
-    disable_constraints = []
-    for t in trans_names:
-        indices = sorted(p_to_i[p] for p in pre[t])
-        disable_constraints.append({"transition": t, "pre_places": indices})
+    disable=[]
+    for t in trans:
+        disable.append({
+            "transition":t,
+            "pre_places":sorted(pidx[p] for p in pre[t])
+        })
 
     return {
-        "places": places,
-        "transitions": trans_names,
-        "C": C,
-        "M0": M0,
-        "x_bounds": {"lower": 0, "upper": x_upper},
-        "disable_constraints": disable_constraints
+        "places":places,
+        "transitions":trans,
+        "C":C,
+        "M0":M0,
+        "x_bounds":{"lower":0,"upper":20},
+        "disable_constraints":disable
     }
 
-# =========================== MAIN MODES ===========================
+# ============================================================
+# SYMBOLIC REACHABILITY
+# ============================================================
 
-def run_union_mode(inp_path: str, order: Optional[str], net_path_for_lp: str):
+def run_symbolic(net_path, order):
     """
-    Mode 1 – union_only:
-        Encode explicit reachable markings (Task 2) as OR-of-cubes.
+    Full symbolic reachability computation:
 
-    Supports both:
-        - new format: {"reachable_markings": [...], ...}
-        - old format: [ {...}, {...}, ... ]
+        R0 = cube(M0)
+        Iteratively:
+            RT = R ∧ T
+            Post = ∃P (RT)
+            rename p'→p
+            R_new = R ∪ Post
+        until fixed point
+
+    Finally, compute SATCOUNT to count the number of reachable markings.
     """
-    raw = load_json(inp_path)
 
-    # Chấp nhận cả format mới (object) và cũ (list)
-    if isinstance(raw, dict):
-        markings = raw.get("reachable_markings", [])
-    else:
-        markings = raw
-
-    # remove duplicates
-    uniq, seen = [], set()
-    for m in markings:
-        key = tuple(sorted((k, int(v)) for k, v in m.items()))
-        if key not in seen:
-            seen.add(key)
-            uniq.append({k: int(v) for k, v in m.items()})
-
-    # choose variable ordering
-    user_order = [v.strip() for v in order.split(",")] if order else None
-    var_order = choose_var_order_from_markings(uniq, user_order)
-
-    # build BDD
-    bdd = BDD(var_order)
-    cubes = [bdd.cube_from_marking(m, var_order) for m in uniq]
-    F = or_reduce_balanced(bdd, cubes)
-
-    result = {
-        "num_markings": len(uniq),              # explicit size
-        "bdd_nodes": len(bdd.nodes),            # symbolic size
-        "places": var_order,
-        "build_time_seconds": None,
-        "bdd_root": F,
-        "nodes": export_bdd_nodes_dict(bdd),
-        "lp": build_incidence_and_lp(net_path_for_lp, var_order),
-        "mode": "union_only",
-        "stats": bdd.stats
-    }
-
-    return result
-
-# ------------------------------------------------------------------------
-
-def run_symbolic_mode(net_path: str, order: Optional[str]):
-    """
-    Mode 2 – symbolic:
-        Perform symbolic reachability using:
-            - transition relation T(s,s')
-            - fixed-point iteration
-            - existential abstraction
-            - variable renaming
-    """
     net = load_json(net_path)
-    places = net.get("places") or []
-    init   = net.get("initial_marking") or {}
+    places = net["places"]
+    init   = net["initial_marking"]
 
-    # infer transition names if not explicitly provided
-    arcs = net.get("arcs") or []
-    trans_names = net.get("transitions") or sorted(
-        {t for u, t in arcs if isinstance(t, str)} |
-        {u for u, v in arcs if isinstance(u, str)}
-    )
+    # Determine variable ordering
+    if order:
+        user = [v.strip() for v in order.split(",")]
+        places_order = user + [p for p in places if p not in user]
+    else:
+        places_order = sorted(places)
 
-    # choose ordering
-    user_order = [v.strip() for v in order.split(",")] if order else None
-    places_order = (
-        user_order + sorted([p for p in places if p not in user_order])
-        if user_order else sorted(places)
-    )
+    # Interleaved ordering: p, p', q, q', ...
+    var_order=[]
+    nxt="'"
+    for p in places_order:
+        var_order.append(p)
+        var_order.append(p+nxt)
 
-    next_suffix = "'"
-    var_order = places_order + [p + next_suffix for p in places_order]
     bdd = BDD(var_order)
 
-    # initial cube R0
+    # Initial marking as BDD cube
     R = bdd.cube_from_marking(
-        {p: int(init.get(p, 0)) for p in places_order},
+        {p:int(init.get(p,0)) for p in places_order},
         places_order
     )
 
-    # build T(s,s')
+    # Build transition relation T(s,s')
     pp = derive_preset_postset(net)
-    T = build_T_relation(bdd, places_order, pp["pre"], pp["post"], next_suffix)
+    T = build_T_relation(bdd, places_order, pp["pre"], pp["post"], nxt)
 
-    # --------------------- FIXPOINT ---------------------
-    it = 0
+    curr_vars = set(places_order)
+    rename_map = {p+nxt:p for p in places_order}
+
+    it=0
     while True:
-        it += 1
+        it+=1
 
-        RT = bdd.apply_and(R, T)
-        Post_next = bdd.exists(set(places_order), RT)
-        Post = bdd.rename(Post_next, {p + next_suffix: p for p in places_order})
+        RT = bdd.apply_and(R, T)                 # Combine R with T
+        Post_next = bdd.exists(curr_vars, RT)    # ∃ eliminate current-state vars
+        Post = bdd.rename(Post_next, rename_map) # rename p'→p
 
         R_new = bdd.apply_or(R, Post)
+
         if R_new == R:
             break
-
         R = R_new
 
-    # ----------------------------------------------------
+    # Symbolic SATCOUNT of reachable states
+    num_markings = bdd.count_solutions(R, places_order)
 
     return {
-        "num_markings": None,                 # symbolic does not enumerate counts
+        "num_markings": num_markings,
+        "bdd_root": R,
         "bdd_nodes": len(bdd.nodes),
         "places": places_order,
-        "build_time_seconds": None,
-        "bdd_root": R,
-        "nodes": export_bdd_nodes_dict(bdd),
-        "lp": build_incidence_and_lp(net_path, places_order),
-        "mode": "symbolic",
-        "num_transitions": len(trans_names),
-        "fixpoint_iterations": it,
-        "stats": bdd.stats
+        "iterations": it,
+        "stats": {
+            "num_nodes": len(bdd.nodes),
+            "cache": len(bdd.cache)
+        },
+        "bdd": bdd
     }
 
-# =========================== MAIN ===========================
+# ============================================================
+# JSON Export Helpers
+# ============================================================
+
+def export_nodes(bdd):
+    """Export ROBDD node table to JSON."""
+    out={}
+    out["0"]={"terminal":0}
+    out["1"]={"terminal":1}
+
+    for i in range(2,len(bdd.nodes)):
+        vidx,low,high = bdd.nodes[i]
+        out[str(i)] = {
+            "var": bdd.var_order[vidx],
+            "low": low,
+            "high": high
+        }
+    return out
+
+# ============================================================
+# MAIN EXECUTION
+# ============================================================
 
 def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--in", dest="input_path", default="data/reachable_markings.json")
-    ap.add_argument("--out", dest="output_path", default="data/bdd_result.json")
-    ap.add_argument("--order", dest="order", default=None)
-    ap.add_argument("--symbolic", action="store_true")
-    ap.add_argument("--net", dest="net_path", default="data/net_structure.json")
-    args = ap.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--net", default="data/net_structure.json")
+    parser.add_argument("--out", default="data/bdd_result.json")
+    parser.add_argument("--order", default=None)
+    args = parser.parse_args()
 
     t0 = time.perf_counter()
+    result = run_symbolic(args.net, args.order)
+    build_time = round(time.perf_counter() - t0, 6)
 
-    if args.symbolic:
-        # symbolic mode (full symbolic reachability)
-        result = run_symbolic_mode(args.net_path, args.order)
-    else:
-        # union_only mode (encode explicit reachable set)
-        result = run_union_mode(args.input_path, args.order, args.net_path)
+    bdd = result["bdd"]
+    num_nodes = result["bdd_nodes"]
+    cache_entries = result["stats"]["cache"]
 
-    result["build_time_seconds"] = round(time.perf_counter() - t0, 6)
+    # Rough memory estimate (ROBDD nodes + cache entries)
+    memory_bytes = num_nodes * 32 + cache_entries * 48
+    memory_mb = memory_bytes / (1024 * 1024)
 
-    # save output
-    os.makedirs(os.path.dirname(args.output_path) or ".", exist_ok=True)
-    with open(args.output_path, "w", encoding="utf-8") as f:
-        json.dump(result, f, indent=4, ensure_ascii=False)
+    # Console output
+    print("=== Symbolic Reachability using BDD ===")
+    print("Reachable markings:", result["num_markings"])
+    print("BDD nodes:", num_nodes)
+    print("Iterations:", result["iterations"])
+    print("Build time (sec):", build_time)
+    print(f"Memory usage: {memory_mb:.4f} MB")
 
-    print(json.dumps(result, indent=2, ensure_ascii=False))
+    out_json = {
+        "num_markings": result["num_markings"],
+        "bdd_nodes": num_nodes,
+        "places": result["places"],
+        "build_time_seconds": build_time,
+        "memory_usage_mb": round(memory_mb, 6),
+        "bdd_root": result["bdd_root"],
+        "nodes": export_nodes(bdd),
+        "lp": build_incidence_and_lp(args.net, result["places"]),
+        "stats": result["stats"]
+    }
 
+    os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
+    with open(args.out, "w", encoding="utf-8") as f:
+        json.dump(out_json, f, indent=4, ensure_ascii=False)
 
-if __name__ == "__main__":
+if __name__=="__main__":
     main()
