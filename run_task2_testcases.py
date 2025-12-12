@@ -10,7 +10,6 @@ DATA_DIR = "data"
 EXAMPLE_JSON = os.path.join(DATA_DIR, "net_structure.json")
 OUTPUT_JSON = os.path.join(DATA_DIR, "reachable_markings.json")
 
-
 def load_expected():
     with open(EXPECTED_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
