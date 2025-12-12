@@ -81,8 +81,8 @@ python run_all.py
 ```
 
 Tất cả kết quả sẽ sinh trong thư mục data/.
-📈 Workflow
 ```
+📈 Workflow
 Task 1 (Parser)
    Input : example.pnml
    Output: net_structure.json
