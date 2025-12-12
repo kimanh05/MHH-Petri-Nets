@@ -38,12 +38,10 @@ This document defines the input and output data formats used between tasks in th
         {"P0": 0, "P1": 1, "P2": 0},
         {"P0": 0, "P1": 0, "P2": 1}
     ],
-
     "num_markings": 3,
-
-    "build_time_seconds": 0.001728
+    "build_time_seconds": 0.001728,
+    "memory_usage_mb": 0.000091
 }
-
 
 ```
 
