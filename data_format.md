@@ -38,12 +38,10 @@ This document defines the input and output data formats used between tasks in th
         {"P0": 0, "P1": 1, "P2": 0},
         {"P0": 0, "P1": 0, "P2": 1}
     ],
-
     "num_markings": 3,
-
-    "build_time_seconds": 0.001728
+    "build_time_seconds": 0.001728,
+    "memory_usage_mb": 0.000091
 }
-
 
 ```
 
@@ -53,10 +51,12 @@ This document defines the input and output data formats used between tasks in th
 
 ```json
 {
+    {
     "num_markings": 3,
     "bdd_nodes": 8,
     "places": ["P0", "P1", "P2"],
     "build_time_seconds": 0.0019,
+    "memory_usage_mb": 0.12,
 
     "bdd_root": 7,
 
@@ -94,13 +94,12 @@ This document defines the input and output data formats used between tasks in th
         ]
     },
 
-    "mode": "union_only",
-
     "stats": {
         "num_nodes": 8,
         "cache": 3
     }
 }
+
 
 ```
 
