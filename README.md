@@ -31,6 +31,7 @@ Báo cáo tập trung vào thiết kế cài đặt, kết quả thực nghiệm
 ---
 
 ## 🗂 Cấu trúc thư mục
+```
 BTL_MHH/
 │
 ├── data/
@@ -60,7 +61,7 @@ BTL_MHH/
 ├── run_all_testcases.py
 ├── validate_testcase.py
 └── README.md
-
+```
 
 ---
 
@@ -81,6 +82,7 @@ python run_all.py
 
 Tất cả kết quả sẽ sinh trong thư mục data/.
 📈 Workflow
+```
 Task 1 (Parser)
    Input : example.pnml
    Output: net_structure.json
@@ -100,7 +102,7 @@ Task 4 (Deadlock Detection)
 Task 5 (Optimization)
    Input : reachable_markings.json
    Output: optimization_result.json
-
+```
 🔗 Tham khảo
 
 PNML Standard – https://www.pnml.org/
